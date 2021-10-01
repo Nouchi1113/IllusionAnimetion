@@ -5,10 +5,9 @@ var PixelData = [];
 
 var img0, img1, img2, img3, img, Kotei, Jiyu, Sakujo;
 
-var framet = [];
-var count = [];
+var count = 0;
 
-var framerate = 40;//framerate
+var framerate = 10;//framerate
 var speed = 4;
 var fm = 5;//framerateをいい感じにする変数
 
@@ -93,7 +92,7 @@ function setup() {
   imgEx = imgx + img.width;
   imgEy = imgy + img.height;
 
-  rangedata = [];
+
 
   savepixel = [];//Moveangle,一つ目の画像の角度，２つ目
 
@@ -207,10 +206,10 @@ function draw() {
     } else if (imgcount % 4 == 3) {
       image(img3, imgx, imgy);
     }
-    if (count < 3) {
-      count++;
+    if (imgcount < 3) {
+      imgcount++;
     } else {
-      count = 0;
+      imgcount = 0;
     }
 
   } else {
@@ -235,6 +234,8 @@ function draw() {
   }
 
 }
+
+
 function emboss(num) {
   img.loadPixels();
   pixel = [];
@@ -354,57 +355,8 @@ function emboss(num) {
   }
   PixelData.splice(num, 0, Menu);
 
-  for (a = 0; a < rangedata.length; a++) {
-    count[a] = 0;
-  }
 
-  for (a = 0; a < rangedata.length; a++) {
-    if (count[a] % 4 == 0) {
 
-      for (j = 0; j < img.height - diff; j++) {
-        for (i = 0; i < img.width - diff; i++) {
-          if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
-            let c = img.get(i, j);
-            img0.set(i, j, c);
-          }
-        }
-      }
-    } else if (count[a] % 4 == 1) {
-
-      for (j = 0; j < img.height - diff; j++) {
-        for (i = 0; i < img.width - diff; i++) {
-
-          if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
-            img1.set(i, j, color(PixelData[a][2][i + (img.width - diff) * j]));
-          }
-        }
-      }
-    } else if (count[a] % 4 == 2) {
-
-      for (j = 0; j < img.height - diff; j++) {
-        for (i = 0; i < img.width - diff; i++) {
-
-          if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
-            let c = img.get(i, j);
-            img2.set(i, j, color(255 - red(c), 255 - blue(c), 255 - green(c)));
-          }
-        }
-      }
-    } else if (count[a] % 4 == 3) {
-
-      for (j = 0; j < img.height - diff; j++) {
-        for (i = 0; i < img.width - diff; i++) {
-          if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
-            img3.set(i, j, color(PixelData[a][2][i + (img.width - diff) * j]));
-          }
-        }
-      }
-    }
-    if (count[a] < 4) {
-      count[a]++;
-    }
-    updatePixels();
-  }
 
 }
 
@@ -416,53 +368,52 @@ function mousePressed() {
   if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
     if (mouseButton == LEFT) {
       var partclick = false;
-      for (var i = rangedata.length - 1; i >= 0; i--) {
+      for (k = rangedata.length - 1; k >= 0; k--) {
 
         //既に指定された部分の動き方向を変える場合
 
         //四角の場合
-        if (rangedata[i].mode == 0) {
-          if (mouseX > rangedata[i].efX && mouseX < rangedata[i].elX && mouseY > rangedata[i].efY && mouseY < rangedata[i].elY && !(rangedata[i].efX == imgx && rangedata[i].elX == imgEx && rangedata[i].efY == imgy && rangedata[i].elY == imgEy) && moveJug == false) {
+
+        if (rangedata[k].mode == 0) {
+          if (mouseX > rangedata[k].efX && mouseX < rangedata[k].elX && mouseY > rangedata[k].efY && mouseY < rangedata[k].elY && !(rangedata[k].efX == imgx && rangedata[k].elX == imgEx && rangedata[k].efY == imgy && rangedata[k].elY == imgEy) && moveJug == false) {
             moveJug = true;
-            efx = rangedata[i].efX;
-            efy = rangedata[i].efY;
-            elx = rangedata[i].elX;
-            ely = rangedata[i].elY;
-            Speed(efx, efy, elx, ely, rangedata[i].mode);
-            rangedata.splice(i, 0, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0));
-            framet.splice(i, 0, 0);
-            count.splice(i, 0, 0);
-            PixelData.splice(i, 1);
-            emboss(i);
+            efx = rangedata[k].efX;
+            efy = rangedata[k].efY;
+            elx = rangedata[k].elX;
+            ely = rangedata[k].elY;
+            Speed(efx, efy, elx, ely, rangedata[k].mode);
+            rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0));
+            PixelData.splice(k, 1);
+            emboss(k);
             partclick = true;
+
           }
-        }
-        //円の場合   
-        if (rangedata[i].mode == 1) {
+        } else if (rangedata[k].mode == 1) {  //円の場合 
           var a, b;
-          if (rangedata[i].elX >= rangedata[i].elY) {
-            a = rangedata[i].elX;
-            b = rangedata[i].elY;
+          if (rangedata[k].elX >= rangedata[k].elY) {
+            a = rangedata[k].elX;
+            b = rangedata[k].elY;
           } else {
-            b = rangedata[i].elX;
-            a = rangedata[i].elY;
+            b = rangedata[k].elX;
+            a = rangedata[k].elY;
           }
 
-          if (sq(mouseX - rangedata[i].efX) / sq((a / 2)) + sq(mouseY - rangedata[i].efY) / sq((b / 2)) <= 1 && moveJug == false) {
+          if (sq(mouseX - rangedata[k].efX) / sq((a / 2)) + sq(mouseY - rangedata[k].efY) / sq((b / 2)) <= 1 && moveJug == false) {
             moveJug = true;
-            efx = rangedata[i].efX;
-            efy = rangedata[i].efY;
-            elx = rangedata[i].elX;
-            ely = rangedata[i].elY;
-            speed(efx, efy, elx, ely, rangedata[i].mode);
-            rangedata.splice(i, 0, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 1, 0));
-            PixelData.splice(i, 1);
-            framet.splice(i, 0, 0);
-            count.splice(i, 0, 0);
-            emboss(i);
+            efx = rangedata[k].efX;
+            efy = rangedata[k].efY;
+            elx = rangedata[k].elX;
+            ely = rangedata[k].elY;
+            speed(efx, efy, elx, ely, rangedata[k].mode);
+            rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 1, 0));
+            PixelData.splice(k, 1);
+
+            emboss(k);
             partclick = true;
           }
         }
+
+
       }
 
       //全画面選択
@@ -474,32 +425,32 @@ function mousePressed() {
 
         speed = Speed(efx, efy, elx, ely, 0);
 
-        rangedata.unshift(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0));
-        framet.unshift(0);
-        count.unshift(0);
+        rangedata.splice(0, 0, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0));
+
         if (allpart && rangedata.length >= 2) {
           rangedata.splice(1, 1);
         }
         if (allpart && PixelData.length >= 1) {
           PixelData.length = 0;
+
         }
 
 
         allpart = true;//一度でも全画面選択が使用されたか
-        for (var i = 0; i < rangedata.length; i++) {
-          emboss(i);
-          framet.splice(i, 0, 0);
-          count.splice(i, 0, 0);
+        for (k = 0; k < rangedata.length; k++) {
+          emboss(k);
+
         }
       }
-      //framemode(true)で全ての領域の画像の動きを合わせる
-      for (var i = 0; i < rangedata.length; i++) {
-        framet.splice(i, 0, 0);
-        count.splice(i, 0, 0);
-      }
+
       framemodespeed = int(speed);
+      imageGeneration();
     }
+
+
   }
+
+
   //指定ドラッグスタート座標
   if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
 
@@ -528,18 +479,24 @@ function mousePressed() {
     //運動中止
     if (mouseX > 70 && mouseX < 140 && mouseY > 540 && mouseY < 610) {
       for (i = 0; i < rangedata.length; i++) {
+
         if (efx == rangedata[i].efX) {
-          if (rangedata.get[i].efX == imgx && rangedata[i].elX == imgEx && rangedata[i].efY == imgy && rangedata[i].elY == imgEy) {
+          if (rangedata[i].efX == imgx && rangedata[i].elX == imgEx && rangedata[i].efY == imgy && rangedata[i].elY == imgEy) {
             allpart = false;
 
           }
-          //print(rangedata[i]efX, rangedata.get(i).elX, rangedata.get(i).efY, rangedata.get(i).elY);
+          console.log(i, rangedata.length, rangedata[i]);
           rangedata.splice(i, 1);
+          console.log(i, rangedata.length, rangedata[i]);
         }
+
       }
-      for (i = 0; i < rangedata.length; i++) {
-        emboss(i);
+
+      for (k = 0; k < rangedata.length; k++) {
+        emboss(k);
       }
+      imageGeneration()
+
     }
     //運動速度
     if (mouseX > 40 && mouseX < 170 && mouseY > 340 && mouseY < 400) {
@@ -619,10 +576,8 @@ function mouseReleased() {
       if (mode != 2) {
         speed = 3;
 
+        rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0));
 
-        rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0));
-        framet.push(0);
-        count.push(0);
         emboss(rangedata.length - 1);
 
         x = -10;
@@ -630,11 +585,14 @@ function mouseReleased() {
         ax = -10;
         ay = -10;
       }
+
     }
+    imageGeneration();
   }
 }
 
 function keyPressed() {
+  /*
   if (key == 'f') {
     if (framemode) {
       framemode = false;
@@ -661,8 +619,9 @@ function keyPressed() {
           allpart = false;
 
         }
-
+        console.log(i, rangedata.length, rangedata[i]);
         rangedata.splice(i, 1);
+        console.log(i, rangedata.length, rangedata[i]);
       }
     }
     for (i = 0; i < rangedata.length; i++) {
@@ -676,7 +635,80 @@ function keyPressed() {
 
     Gifcount = 0;
   }
+  */
 }
+
+function imageGeneration() {
+  img0.loadPixels();
+  img1.loadPixels();
+  img2.loadPixels();
+  img3.loadPixels();
+  for (j = 0; j < img.height - diff; j++) {
+    for (i = 0; i < img.width - diff; i++) {
+
+      let c = img.get(i, j);
+      img0.set(i, j, c);
+      img1.set(i, j, c);
+      img2.set(i, j, c);
+      img3.set(i, j, c);
+
+    }
+  }
+
+
+  for (a = 0; a < rangedata.length; a++) {
+
+    for (j = 0; j < img.height - diff; j++) {
+      for (i = 0; i < img.width - diff; i++) {
+        if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
+          let c = img.get(i, j);
+          img0.set(i, j, c);
+        }
+      }
+    }
+
+
+    for (j = 0; j < img.height - diff; j++) {
+      for (i = 0; i < img.width - diff; i++) {
+
+        if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
+          img1.set(i, j, color(PixelData[a][1][i + (img.width - diff) * j]));
+        }
+      }
+    }
+
+
+    for (j = 0; j < img.height - diff; j++) {
+      for (i = 0; i < img.width - diff; i++) {
+
+        if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
+          let c = img.get(i, j);
+          img2.set(i, j, color(255 - red(c), 255 - blue(c), 255 - green(c)));
+        }
+      }
+    }
+
+
+    for (j = 0; j < img.height - diff; j++) {
+      for (i = 0; i < img.width - diff; i++) {
+        if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
+          img3.set(i, j, color(PixelData[a][2][i + (img.width - diff) * j]));
+        }
+      }
+    }
+
+
+
+  }
+  img0.updatePixels();
+  img1.updatePixels();
+  img2.updatePixels();
+  img3.updatePixels();
+
+
+
+}
+
 //speedを求める関数
 function Speed(efx, efy, elx, ely, mode) {
   var centerX = 0, centerY = 0;
