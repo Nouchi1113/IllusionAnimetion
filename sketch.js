@@ -28,7 +28,7 @@ var MulchMode = false;
 var diff = 3;//どれぐらいずらすか
 var gx, gy, nx, ny;//xy方向に何ピクセルずらすか（g:グレースケール，n：ネガポジ）
 
-var x, y, ax, ay;//四角・円に使用する４変数
+var x = -10, y = -10, ax = -10, ay = -10;//四角・円に使用する４変数
 
 var allpart = false;//全画面選択を一度でも使ったかどうか
 
@@ -53,6 +53,11 @@ var Rasso = 0;//Rassoのpiselデータを繋ぐ番号
 
 
 var po = 0;
+
+var input;
+
+
+
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -62,6 +67,8 @@ function preload() {
 }
 
 function setup() {
+
+
   frameRate(framerate);
   createCanvas(1200, 800);
   textFont("Meiryo", 50);
@@ -72,36 +79,30 @@ function setup() {
 
   Sakujo.resize(70, 70);
 
-  img.resize(800, 0);
-  if (img.width >= 900) {
-    img.resize(800, 0);
-  } else if (img.height >= 800) {
-    img.resize(0, 600);
-  }
-  img0 = createImage(img.width, img.height);
-  img1 = createImage(img.width, img.height);
-  img2 = createImage(img.width, img.height);
-  img3 = createImage(img.width, img.height);
+  imageReset(img);
 
 
-  //画像の座標
-  //始点
-  imgx = 700 - img.width / 2;
-  imgy = 430 - img.height / 2;
-  //終点
-  imgEx = imgx + img.width;
-  imgEy = imgy + img.height;
+
 
 
 
   savepixel = [];//Moveangle,一つ目の画像の角度，２つ目
 
+  input = createFileInput(handleFile);
+  input.position(30, 30);
 }
 
 
-
-
-
+function handleFile(file) {
+  print(file);
+  if (file.type === 'image') {
+    img = loadImage(file.data);
+    img.resize(800, 0);
+    imageReset(img);
+  } else {
+    img = null;
+  }
+}
 
 
 
@@ -135,7 +136,7 @@ function draw() {
   text("運動速度", 65, 315);
   fill(237, 234, 227);
 
-  rect(20, 325, 170, 170, 5);//運動速度のアイコン選択
+  rect(20, 325, 170, 85, 5);//運動速度のアイコン選択
 
   fill(31, 30, 99);
   text("領域削除", 65, 535);
@@ -164,12 +165,12 @@ function draw() {
     fill(99, 98, 30);
     rect(40, 340, 130, 60);
   }
-
-  if (!framemode) {
-    fill(99, 98, 30);
-    rect(40, 420, 130, 60);
-  }
-
+  /*
+    if (!framemode) {
+      fill(99, 98, 30);
+      rect(40, 420, 130, 60);
+    }
+  */
   //メニューバーのアイコン
   fill(20);
   rect(60, 130, 90, 40);//四角アイコン
@@ -180,13 +181,14 @@ function draw() {
 
   fill(20);
   image(Kotei, 55, 345);
-  image(Jiyu, 55, 425);
 
+  //image(Jiyu, 55, 425);
+  /*
   fill(255);
   textSize(25);
   text("動画保存", 1055, 45);
   triangle(1160, 30, 1170, 30, 1165, 40);
-
+*/
 
 
   image(img, imgx, imgy);
@@ -326,23 +328,27 @@ function emboss(num) {
       nx = 0;
       ny = abs(round(sin(radians(ang[a])) * diff));
     }
+    console.log("a");
 
+    var gc, nc, f1, f2, f;
     for (j = 0; j < img.height - diff; j++) {
       for (i = 0; i < img.width - diff; i++) {
-        var gc = img.get(i + gx, j + gy);
-        var nc = img.get(i + nx, j + ny);
+
+        gc = img.get(i + gx, j + gy);
+        nc = img.get(i + nx, j + ny);
         //元画像の(i+diff, j+diff)のピクセルの明るさをfloat f1に入れる
 
-        var f1 = brightness(gc);
+        f1 = brightness(gc);
         //元画像の(i, j)のピクセルの明るさを反転させてfloat f２に入れる
-        var f2 = 255 - brightness(nc);
+        f2 = 255 - brightness(nc);
 
+        f = f1 + f2 - 128;
         //color c=img.pixels[i+nx+(j+ny)*img.width];
         //出力画像の(i, j)のピクセルの明るさを(f1+f2-128)にする
         if (a == 0) {
-          Embpixel1.push(f1 + f2 - 128);
+          Embpixel1.push(f);
         } else {
-          Embpixel2.push(f1 + f2 - 128);
+          Embpixel2.push(f);
         }
       }
     }
@@ -354,10 +360,6 @@ function emboss(num) {
     }
   }
   PixelData.splice(num, 0, Menu);
-
-
-
-
 }
 
 
@@ -386,7 +388,6 @@ function mousePressed() {
             PixelData.splice(k, 1);
             emboss(k);
             partclick = true;
-
           }
         } else if (rangedata[k].mode == 1) {  //円の場合 
           var a, b;
@@ -404,7 +405,7 @@ function mousePressed() {
             efy = rangedata[k].efY;
             elx = rangedata[k].elX;
             ely = rangedata[k].elY;
-            speed(efx, efy, elx, ely, rangedata[k].mode);
+            Speed(efx, efy, elx, ely, rangedata[k].mode);
             rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 1, 0));
             PixelData.splice(k, 1);
 
@@ -432,11 +433,11 @@ function mousePressed() {
         }
         if (allpart && PixelData.length >= 1) {
           PixelData.length = 0;
-
         }
 
 
         allpart = true;//一度でも全画面選択が使用されたか
+
         for (k = 0; k < rangedata.length; k++) {
           emboss(k);
 
@@ -485,9 +486,9 @@ function mousePressed() {
             allpart = false;
 
           }
-          console.log(i, rangedata.length, rangedata[i]);
+
           rangedata.splice(i, 1);
-          console.log(i, rangedata.length, rangedata[i]);
+
         }
 
       }
@@ -498,19 +499,23 @@ function mousePressed() {
       imageGeneration()
 
     }
-    //運動速度
+    /*運動速度
+
     if (mouseX > 40 && mouseX < 170 && mouseY > 340 && mouseY < 400) {
       framemode = true;
     }
     if (mouseX > 40 && mouseX < 170 && mouseY > 420 && mouseY < 480) {
       framemode = false;
     }
+   
+
     //動画保存　rect(970, 20, 180, 60)
     if (mouseX > 1055 && mouseX < 1200 && mouseY > 0 && mouseY < 60 && po == 0) {
       Gifrecord = true;
       Gifcount = 0;
       po++;
     }
+     */
   }
 }
 
@@ -576,7 +581,7 @@ function mouseReleased() {
       if (mode != 2) {
         speed = 3;
 
-        rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0));
+        rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0));
 
         emboss(rangedata.length - 1);
 
@@ -639,6 +644,8 @@ function keyPressed() {
 }
 
 function imageGeneration() {
+
+
   img0.loadPixels();
   img1.loadPixels();
   img2.loadPixels();
@@ -704,9 +711,28 @@ function imageGeneration() {
   img1.updatePixels();
   img2.updatePixels();
   img3.updatePixels();
+}
 
+function imageReset(imG) {
+  imG.resize(400, 0);
+  if (imG.width >= 400) {
+    imG.resize(400, 0);
+  } else if (imG.height >= 300) {
+    imG.resize(0, 300);
+  }
+  img0 = createImage(img.width, img.height);
+  img1 = createImage(img.width, img.height);
+  img2 = createImage(img.width, img.height);
+  img3 = createImage(img.width, img.height);
+  //画像の座標
+  //始点
+  imgx = 700 - imG.width / 2;
+  imgy = 430 - imG.height / 2;
+  //終点
+  imgEx = imgx + imG.width;
+  imgEy = imgy + imG.height;
 
-
+  console.log(imgx, imgy, imgEx, imgEy);
 }
 
 //speedを求める関数
