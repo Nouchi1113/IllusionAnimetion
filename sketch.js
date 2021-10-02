@@ -56,7 +56,7 @@ var po = 0;
 
 var input;
 
-
+var syorityu = false;
 
 function preload() {
   //変数を使って画像をロード
@@ -92,12 +92,20 @@ function setup() {
   input.position(30, 30);
 }
 
+function imageLoaded() { //★２
+  img.resize(400, 0);
+
+  if (img.width >= 400) {
+    img.resize(400, 0);
+  } else if (img.height >= 300) {
+    img.resize(0, 300);
+  }
+}
 
 function handleFile(file) {
   print(file);
   if (file.type === 'image') {
-    img = loadImage(file.data);
-    img.resize(800, 0);
+    img = loadImage(file.data, imageLoaded);
     imageReset(img);
   } else {
     img = null;
@@ -235,6 +243,7 @@ function draw() {
 
   }
 
+
 }
 
 
@@ -360,11 +369,13 @@ function emboss(num) {
     }
   }
   PixelData.splice(num, 0, Menu);
+  syorityu = false;
 }
 
 
 // ドラッグ開始
 function mousePressed() {
+
   var moveJug = false;//一度でも範囲に入ったかどうか
   var moveJugNum = -1;//入ったNoを書いておいて一番上層のNoを最後参照して動かす
   if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
@@ -644,6 +655,7 @@ function keyPressed() {
 }
 
 function imageGeneration() {
+  syorityu = true;
 
 
   img0.loadPixels();
@@ -690,7 +702,8 @@ function imageGeneration() {
 
         if (PixelData[a][0][i + (img.width - diff) * j] == 1) {
           let c = img.get(i, j);
-          img2.set(i, j, color(255 - red(c), 255 - blue(c), 255 - green(c)));
+          img2.set(i, j, color(255 -
+            red(c), 255 - blue(c), 255 - green(c)));
         }
       }
     }
@@ -711,6 +724,7 @@ function imageGeneration() {
   img1.updatePixels();
   img2.updatePixels();
   img3.updatePixels();
+  syorityu = false;
 }
 
 function imageReset(imG) {
@@ -732,7 +746,9 @@ function imageReset(imG) {
   imgEx = imgx + imG.width;
   imgEy = imgy + imG.height;
 
-  console.log(imgx, imgy, imgEx, imgEy);
+
+  rangedata.length = 0;
+  PixelData.length = 0;
 }
 
 //speedを求める関数
