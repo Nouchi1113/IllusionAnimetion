@@ -1,16 +1,29 @@
+<?phpheader('Cross-Origin-Opener-Policy: same-origin');
+header('Cross-Origin-Embedder-Policy: require-corp');?>
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="utf-8">
     <title>p5.js test</title>
+    <link rel="stylesheet" href="style.css">
+
     <script src="https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js"></script>
-    <script src="https://unpkg.com/p5.createloop@0.2.8/dist/p5.createloop.js"></script>
+    <script src="build/CCapture.all.min.js"></script>
     <script src="./sketch.js"></script>
 </head>
 
 <body>
+    <p id="Twitter"><a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
+            data-url="https://nouchi1113.github.io/IllusionAnimetion/" data-text="ダウンロードされた映像を添付してツイートしてください"
+            data-hashtag="IllusionAnimetion" data-size="large">Tweet</a></p>
 
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <div id="container1"></div>
+    <script>
+
+
+    </script>
 </body>
 
 </html>
