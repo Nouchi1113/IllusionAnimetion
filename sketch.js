@@ -1,6 +1,3 @@
-
-
-
 var imgcount = 0;
 var diff = 3;//どれぐらいずらすか
 
@@ -140,6 +137,7 @@ var canvas;
 
 
 function draw() {
+  frameRate(framerate);
   if (hozon) {
 
     if (mp4 && imgcount == 0) {
@@ -149,9 +147,6 @@ function draw() {
     } else if (mp4 && imgcount == 92) {
       capturer.save();
       capturer.stop();
-    }
-    if (mp4) {
-
     }
 
     if (imgcount % 4 == 0) {
@@ -184,25 +179,27 @@ function draw() {
     fill(220, 213, 200);
     rect(10, 60, 190, 730);//左のメニューバ-
 
-    /**/
-    stroke(105);
+
+    stroke(140);
     textSize(20);
     fill(31, 30, 99);
     text("領域選択", 65, 95);
     fill(237, 234, 227);
     noStroke();
-    rect(20, 105, 170, 510, 5);//領域選択のアイコン背景
+    rect(20, 105, 170, 170, 5);//領域選択のアイコン背景
 
 
+    stroke(140);
     fill(31, 30, 99);
-    text("運動速度", 65, 315);
+    text("運動方法", 65, 315);
     fill(237, 234, 227);
+    noStroke();
+    rect(20, 325, 170, 255, 5);//運動速度のアイコン選択
 
-    rect(20, 325, 170, 85, 5);//運動速度のアイコン選択
-
+    stroke(140);
     fill(31, 30, 99);
-    text("領域削除", 65, 635);
-
+    text("領域削除", 65, 625);
+    image(Sakujo, 70, 640);
 
     //領域選択
     if (mode == 0) {
@@ -224,13 +221,19 @@ function draw() {
     //運動速度
     if (Movemode == 0) {
       fill(99, 98, 30);
-      rect(40, 340, 130, 60);
+      rect(30, 340, 75, 60);
     } else if (Movemode == 1) {
       fill(99, 98, 30);
-      rect(40, 420, 130, 60);
+      rect(105, 340, 75, 60);
     } else if (Movemode == 2) {
       fill(99, 98, 30);
-      rect(40, 500, 130, 60);
+      rect(30, 420, 75, 60);
+    } else if (Movemode == 3) {
+      fill(99, 98, 30);
+      rect(105, 420, 75, 60);
+    } else if (Movemode == 4) {
+      fill(99, 98, 30);
+      rect(30, 500, 75, 60);
     }
 
     //メニューバーのアイコン
@@ -238,11 +241,16 @@ function draw() {
     rect(60, 130, 90, 40);//四角アイコン
     ellipse(105, 225, 50, 50);//丸アイコン
 
-
-    image(Sakujo, 70, 640);
-
     fill(20);
-    image(Kotei, 55, 345);
+
+    //image(Kotei, 55, 345);
+    text("移動", 50, 375);
+    text("拡大", 120, 375);
+    text("縮小", 50, 455);
+    text("振動", 120, 455);
+    text("不動", 50, 535);
+
+
 
     fill(255);
     text("動画出力:", 920, 45);
@@ -412,7 +420,6 @@ function emboss(num, wi, he) {
         } else {
           gc = imgOriginal.get(i + gx, j + gy);
           nc = imgOriginal.get(i + nx, j + ny);
-
         }
         //元画像の(i+diff, j+diff)のピクセルの明るさをfloat f1に入れる
         f1 = 255 - brightness(gc);
@@ -455,10 +462,65 @@ function emboss(num, wi, he) {
 
       }
     }
+  }//振動
+  else if (rangedata[num].movemode == 3) {
+    MangCalc(centerX, centerY);
+    for (j = 0; j < he - diff; j++) {
+      for (i = 0; i < wi - diff; i++) {
+        if (wi == img.width && he == img.height) {
+          gc = img.get(i + gx, j + gy);
+          nc = img.get(i + nx, j + ny);
+        } else {
+          gc = imgOriginal.get(i + gx, j + gy);
+          nc = imgOriginal.get(i + nx, j + ny);
+        }
+        //元画像の(i+diff, j+diff)のピクセルの明るさをfloat f1に入れる
+        f1 = brightness(gc);
+        s1 = 255 - brightness(gc);
+        //元画像の(i, j)のピクセルの明るさを反転させてfloat f２に入れる
+        f2 = 255 - brightness(nc);
+        s2 = brightness(nc);
+        //出力画像の(i, j)のピクセルの明るさを(f1+f2-128)にする
+        f = f1 + f2 - 128;
+        s = f1 + f2 - 128;
+        //color c=img.pixels[i+nx+(j+ny)*img.width];
+        Embpixel1.push(f);
+        Embpixel2.push(s);
+      }
+    }
+    //運動なし（グレースケール）
+  } else if (rangedata[num].movemode == 4) {
+
+    for (j = 0; j < he - diff; j++) {
+      for (i = 0; i < wi - diff; i++) {
+
+        if (wi == img.width && he == img.height) {
+          gc = img.get(i, j);
+          nc = img.get(i, j);
+        } else {
+          gc = imgOriginal.get(i, j);
+          nc = imgOriginal.get(i, j);
+        }
+        //元画像の(i+diff, j+diff)のピクセルの明るさをfloat f1に入れる
+        f1 = brightness(gc);
+        s1 = 255 - brightness(gc);
+        //元画像の(i, j)のピクセルの明るさを反転させてfloat f２に入れる
+        f2 = 255 - brightness(nc);
+        s2 = brightness(nc);
+        //出力画像の(i, j)のピクセルの明るさを(f1+f2-128)にする
+        f = f1 + f2 - 128;
+        s = f1 + f2 - 128;
+        //color c=img.pixels[i+nx+(j+ny)*img.width];
+        Embpixel1.push(f);
+        Embpixel2.push(s);
+      }
+    }
   }
+
+
+
   Menu.push(Embpixel1);
   Menu.push(Embpixel2);
-
 
   PixelData.splice(num, 1, Menu);
   console.log(PixelData);
@@ -608,30 +670,44 @@ function mousePressed() {
     } else if (mouseX > 40 && mouseX < 170 && mouseY > 195 && mouseY < 255) {
       mode = 1;
     }
-
-    //運動速度
-    if (mouseX > 40 && mouseX < 170 && mouseY > 340 && mouseY < 400) {
-      Movemode = 0;
-    } else if (mouseX > 40 && mouseX < 170 && mouseY > 420 && mouseY < 480) {
-      Movemode = 1;
-    } else if (mouseX > 40 && mouseX < 170 && mouseY > 500 && mouseY < 560) {
-      Movemode = 2;
+    noStroke();
+    if (Movemode == 0) {
+      fill(99, 98, 30);
+      rect(30, 340, 75, 60);
+    } else if (Movemode == 1) {
+      fill(99, 98, 30);
+      rect(105, 340, 75, 60);
+    } else if (Movemode == 2) {
+      fill(99, 98, 30);
+      rect(30, 420, 75, 60);
+    } else if (Movemode == 3) {
+      fill(99, 98, 30);
+      rect(105, 420, 75, 60);
     }
+
+    //運動方法
+    if (mouseX > 30 && mouseX < 105 && mouseY > 340 && mouseY < 400) {
+      Movemode = 0;
+    } else if (mouseX > 105 && mouseX < 180 && mouseY > 340 && mouseY < 400) {
+      Movemode = 1;
+    } else if (mouseX > 30 && mouseX < 105 && mouseY > 420 && mouseY < 480) {
+      Movemode = 2;
+    } else if (mouseX > 105 && mouseX < 180 && mouseY > 420 && mouseY < 480) {
+      Movemode = 3;
+    } else if (mouseX > 30 && mouseX < 105 && mouseY > 500 && mouseY < 560) {
+      Movemode = 4;
+    }
+
 
     //領域削除
     if (mouseX > 70 && mouseX < 140 && mouseY > 640 && mouseY < 710) {
       for (i = 0; i < rangedata.length; i++) {
-
         if (efx == rangedata[i].efX) {
           if (rangedata[i].efX == imgx && rangedata[i].elX == imgEx && rangedata[i].efY == imgy && rangedata[i].elY == imgEy) {
             allpart = false;
-
           }
-
           rangedata.splice(i, 1);
-
         }
-
       }
 
       for (k = 0; k < rangedata.length; k++) {
@@ -653,11 +729,7 @@ function mousePressed() {
     if (mouseX > 1090 && mouseX < 1170 && mouseY > 0 && mouseY < 60 && po == 0) {
       Export();
       mp4 = true;
-
-
-
     }
-
   }
 }
 
@@ -686,6 +758,7 @@ function Export() {
   img1 = createImage(originalWidth, originalheight);
   img2 = createImage(originalWidth, originalheight);
   img3 = createImage(originalWidth, originalheight);
+
   //rangedataを元の画像サイズ版にする
   for (i = 0; i < rangedata.length; i++) {
     console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
@@ -786,12 +859,15 @@ function mouseReleased() {
 }
 
 function keyPressed() {
-
+  if (keyCode === UP_ARROW) {
+    framerate = framerate + 5;
+  } else if (framerate > 5 && keyCode === DOWN_ARROW) {
+    framerate = framerate - 5;
+  }
+  console.log(framerate);
 }
 
 function imageGeneration(wi, he) {
-
-
   syorityu = true;
   img0.loadPixels();
   img1.loadPixels();
