@@ -27,8 +27,6 @@ var part = false;
 //複数のパート機能を使う場合
 var MulchMode = false;
 
-
-
 var gx, gy, nx, ny;//xy方向に何ピクセルずらすか（g:グレースケール，n：ネガポジ）
 
 var x = -10, y = -10, ax = -10, ay = -10;//四角・円に使用する４変数
@@ -67,9 +65,19 @@ var originalheight;
 let isRecording = false;
 var hiquality = true;
 var mp4 = false;
+//運動方法の初期値
+var Movemode = 0;
+//右メニューに作る画像データ
+var rangeImage = [];
 
-var Movemode = 2;
+//右メニューの座標
+var rmx = 1000;
+var rmy = 60;
+var rmex = 1190;
+var rmey = 790;
 
+//右メニューに表示する最初の画像の番号
+var rfn = 0;
 
 function preload() {
   //変数を使って画像をロード
@@ -87,13 +95,12 @@ function setup() {
   textFont("Meiryo", 50);
 
   Kotei.resize(105, 50);
-
   Jiyu.resize(105, 50);
 
   Sakujo.resize(70, 70);
   originalWidth = img.width;
   originalheight = img.height;
-  console.log(originalWidth, originalheight, img.width, img.height);
+
   imageReset(img);
 
   savepixel = [];//Moveangle,一つ目の画像の角度，２つ目
@@ -137,12 +144,11 @@ var canvas;
 
 
 function draw() {
+  framerate = Number(document.getElementById("number2").value);
   frameRate(framerate);
   if (hozon) {
-
     if (mp4 && imgcount == 0) {
       capturer.start();
-
 
     } else if (mp4 && imgcount == 92) {
       capturer.save();
@@ -160,7 +166,6 @@ function draw() {
     }
 
     imgcount++;
-
   } else {
     document.getElementById("Twitter").style.display = "none";
 
@@ -177,8 +182,9 @@ function draw() {
     stroke(162, 162, 173);
     rect(200, 60, 990, 730);//画像背景
     fill(220, 213, 200);
-    rect(10, 60, 190, 730);//左のメニューバ-
 
+
+    rect(10, 60, 190, 730);//左のメニューバ-
 
     stroke(140);
     textSize(20);
@@ -243,7 +249,6 @@ function draw() {
 
     fill(20);
 
-    //image(Kotei, 55, 345);
     text("移動", 50, 375);
     text("拡大", 120, 375);
     text("縮小", 50, 455);
@@ -251,7 +256,45 @@ function draw() {
     text("不動", 50, 535);
 
 
+    //右のメニューバ-
+    fill(220, 213, 200);
 
+    rect(rmx, rmy, rmex - rmx, rmey - rmy);
+
+    stroke(140);
+    textSize(20);
+    fill(31, 30, 99);
+    text("切替速度(fps)", 1040, 95);
+
+
+    text("選択範囲", 1055, 200);
+
+    //右メニューで画像を出す
+    if (rangedata.length > 0) {
+      var ry = 220;
+      for (e = rfn; e < rangedata.length; e++) {
+        if (ry + rangeImage[e].height > height - 50) {
+          break;
+        }
+        image(rangeImage[e], 1095 - rangeImage[e].width / 2, ry);
+        //ellipseを右の画像に出す
+        if (rangedata[e].mode == 1) {
+          stroke(0, 255, 0);
+          let ex = 1095;
+          let ey = ry + rangeImage[e].height / 2;
+          let eex = rangeImage[e].width;
+          let eey = rangeImage[e].height;
+          noFill();
+          ellipse(ex, ey, eex, eey);
+        }
+        ry = ry + rangeImage[e].height + 20;
+      }
+    }
+
+    //右メニューの画像を動かす矢印
+    triangle(1180, 300, 1170, 320, 1190, 320);
+    triangle(1180, 540, 1170, 520, 1190, 520);
+    stroke(30, 31, 99);
     fill(255);
     text("動画出力:", 920, 45);
 
@@ -266,10 +309,6 @@ function draw() {
 
     fill(255);
     text("WebM", 1100, 45);
-
-
-    //image(img, imgx, imgy);
-
 
     if (rangedata.length > 0) {
       //framemode(true)で全ての領域の画像の動きを合わせる
@@ -291,13 +330,19 @@ function draw() {
         imgcount = 0;
       }
 
+      //既に選択している範囲を見えるようにする
+      for (r = 0; r < rangedata.length; r++) {
+        stroke(0, 255, 0);
+        noFill();
+        if (rangedata[r].mode == 0) {
+          rect(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
+        } else if (rangedata[r].mode == 1) {
+          ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
+        }
+      }
     } else {
       image(img, imgx, imgy);
     }
-
-
-
-
     rangesize = rangedata.length;
 
     strokeWeight(3);
@@ -305,15 +350,10 @@ function draw() {
     noFill();
     if (mode == 0) {
       rect(x, y, ax, ay);
-
     } else if (mode == 1) {
       ellipse(x, y, ax, ay);
-    } else if (mode == 2) {
-
     }
-
   }
-
 }
 
 
@@ -349,13 +389,9 @@ function emboss(num, wi, he) {
       //円の場合   
       if (rangedata[num].mode == 1) {
         let aX, bX;
-        if (rangedata[num].elX >= rangedata[num].elY) {
-          aX = rangedata[num].elX;
-          bX = rangedata[num].elY;
-        } else {
-          bX = rangedata[num].elX;
-          aX = rangedata[num].elY;
-        }
+
+        aX = rangedata[num].elX;
+        bX = rangedata[num].elY;
 
         if (sq(i + imgx - rangedata[num].efX) / sq((aX / 2)) + sq(j + imgy - rangedata[num].efY) / sq((bX / 2)) <= 1) {
           pixel.splice(i + (wi - diff) * j, 0, 1);
@@ -522,8 +558,8 @@ function emboss(num, wi, he) {
   Menu.push(Embpixel1);
   Menu.push(Embpixel2);
 
-  PixelData.splice(num, 1, Menu);
-  console.log(PixelData);
+  PixelData.splice(num, 0, Menu);
+
   syorityu = false;
 
   function MangCalc(_centerx, _centery) {
@@ -561,8 +597,9 @@ function emboss(num, wi, he) {
 function mousePressed() {
   var moveJug = false;//一度でも範囲に入ったかどうか
   var moveJugNum = -1;//入ったNoを書いておいて一番上層のNoを最後参照して動かす
-  if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
-    if (mouseButton == LEFT) {
+  if (mouseButton == LEFT) {
+    if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
+
       var partclick = false;
       for (k = rangedata.length - 1; k >= 0; k--) {
 
@@ -583,6 +620,7 @@ function mousePressed() {
             emboss(k, img.width, img.height);
             partclick = true;
           }
+
         } else if (rangedata[k].mode == 1) {  //円の場合 
           var a, b;
           if (rangedata[k].elX >= rangedata[k].elY) {
@@ -621,7 +659,7 @@ function mousePressed() {
         speed = Speed(efx, efy, elx, ely, 0);
 
         rangedata.splice(0, 0, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0, Movemode));
-        console.log(rangedata);
+
 
         if (allpart && rangedata.length >= 2) {
           rangedata.splice(1, 1);
@@ -635,7 +673,12 @@ function mousePressed() {
 
         for (k = 0; k < rangedata.length; k++) {
           emboss(k, img.width, img.height);
+        }
+        rangeImage[rangedata.length - 1] = createImage(elx - efx, ely - efy);
+        rangeImage[rangedata.length - 1] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
 
+        if (rangeImage[rangedata.length - 1].width > 150) {
+          rangeImage[rangedata.length - 1].resize(150, 0);
         }
       }
 
@@ -643,12 +686,78 @@ function mousePressed() {
       imageGeneration(img.width, img.height);
     }
 
+    //右メニューバーからエンボスさせる
+    let rry = 220;
+    for (e = rfn; e < rangedata.length; e++) {
+      if (rangedata[e].mode == 0) {
+
+        if ((mouseX > 1095 - rangeImage[e].width / 2 && mouseX < 1095 + rangeImage[e].width / 2 && rry < mouseY && mouseY < rry + rangeImage[e].height)) {
+
+          efx = rangedata[e].efX;
+          efy = rangedata[e].efY;
+          elx = rangedata[e].elX;
+          ely = rangedata[e].elY;
+          Speed(efx, efy, elx, ely, rangedata[e].mode);
+
+          //右メニューでの画像と本画像のクリック位置を合わせる
+          let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, imgx, imgEx);
+          let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
+
+          rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 0, 0, Movemode));
+          PixelData.splice(e, 1);
+          emboss(e, img.width, img.height);
+          partclick = true;
+          imageGeneration(img.width, img.height);
+        }
+
+      } else if (rangedata[e].mode == 1) {  //円の場合 
+        var a, b;
+        if (rangedata[e].elX >= rangedata[e].elY) {
+          a = rangedata[e].elX;
+          b = rangedata[e].elY;
+        } else {
+          b = rangedata[e].elX;
+          a = rangedata[e].elY;
+        }
+
+        if ((mouseX > 1095 - rangeImage[e].width / 2 && mouseX < 1095 + rangeImage[e].width / 2 && rry < mouseY && mouseY < rry + rangeImage[e].height)) {
+          moveJug = true;
+          efx = rangedata[e].efX;
+          efy = rangedata[e].efY;
+          elx = rangedata[e].elX;
+          ely = rangedata[e].elY;
+          Speed(efx, efy, elx, ely, rangedata[e].mode);
+          let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, imgx, imgEx);
+          let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
+          rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 1, 0, Movemode));
+          PixelData.splice(e, 1);
+
+          emboss(e, img.width, img.height);
+          partclick = true;
+          imageGeneration(img.width, img.height);
+
+        }
+      }
+      rry = rry + rangeImage[e].height + 20;
+      framemodespeed = int(speed);
+
+    }
+    //右メニューの画像の表示切り替え
+    if (mouseX > 1170 && mouseX < 1190 && mouseY > 300 && mouseY < 320 && rfn > 0) {
+      rfn--;
+
+    } else if (mouseX > 1170 && mouseX < 1190 && mouseY > 520 && mouseY < 540 && rfn < rangedata.length - 1) {
+      rfn++;
+    }
 
   }
 
 
+
+
   //指定ドラッグスタート座標
   if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
+
 
     if (mouseButton == RIGHT) {
       Efx = mouseX;
@@ -657,7 +766,6 @@ function mousePressed() {
       if (mode == 0 || mode == 1) {
         x = Efx;
         y = Efy;
-
       }
     }
   }
@@ -707,6 +815,7 @@ function mousePressed() {
             allpart = false;
           }
           rangedata.splice(i, 1);
+          rangeImage.splice(i, 1);
         }
       }
 
@@ -714,7 +823,6 @@ function mousePressed() {
         emboss(k, img.width, img.height);
       }
       imageGeneration(img.width, img.height);
-
     }
 
     //動画出力
@@ -733,54 +841,7 @@ function mousePressed() {
   }
 }
 
-function Export() {
-  document.getElementById("Twitter").style.display = "block";
-  var sketch1 = function (p) {
-    p.setup = function () {
-      p.createCanvas(1200, 800);
-    };
 
-    p.draw = function () {
-      p.fill(255);
-      p.textSize(50);
-      p.background(31, 30, 99);
-      p.text("出力中", 520, 400);
-
-    };
-  };
-  new p5(sketch1, "container1");
-
-  hozon = true;
-  p5Canvas = createCanvas(originalWidth, originalheight);
-  p5Canvas.hide();
-
-  img0 = createImage(originalWidth, originalheight);
-  img1 = createImage(originalWidth, originalheight);
-  img2 = createImage(originalWidth, originalheight);
-  img3 = createImage(originalWidth, originalheight);
-
-  //rangedataを元の画像サイズ版にする
-  for (i = 0; i < rangedata.length; i++) {
-    console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
-    rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, originalWidth);
-    rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, originalheight);
-    rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, originalWidth);
-    rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, originalheight);
-    console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
-    emboss(i, originalWidth, originalheight);
-  }
-
-  imageGeneration(originalWidth, originalheight);
-
-
-  //createLoop({duration:3, gif:{download:true}});
-  save(img0, "1.png");
-  save(img1, "2.png");
-  save(img2, "3.png");
-  save(img3, "4.png");
-  imgcount = 0;
-
-}
 
 
 // ドラッグ中にマウスの場所が四角の終点になる
@@ -792,8 +853,10 @@ function mouseDragged() {
         ax = mouseX - x;
         ay = mouseY - y;
       } else if (mode == 1) {
-        ax = (mouseX - x) * 2;
-        ay = (mouseY - y) * 2;
+        x = (mouseX + Efx) / 2;
+        y = (mouseY + Efy) / 2;
+        ax = mouseX - Efx;
+        ay = mouseY - Efy;
         if ((keyPressed == true) && (keyCode == CONTROL)) {
           var a = dist(x, y, mouseX, mouseY);
           ax = int(a * 2);
@@ -835,23 +898,40 @@ function mouseReleased() {
           efy = a;
         }
       } else if (mode == 1) {
+        efx = x;
+        efy = y;
         elx = ax;
         ely = ay;
       }
 
-      //mode2と被っているので一時的なコードにしてる
-      if (mode != 2) {
-        speed = 3;
+      speed = 3;
 
-        rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
+      rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
 
-        emboss(rangedata.length - 1, img.width, img.height);
+      emboss(rangedata.length - 1, img.width, img.height);
 
-        x = -10;
-        y = -10;
-        ax = -10;
-        ay = -10;
+
+      //右メニューに出す画像データを取得する
+      if (mode == 0) {
+        rangeImage[rangedata.length - 1] = createImage(elx - efx, ely - efy);
+        rangeImage[rangedata.length - 1] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
+
+        if (rangeImage[rangedata.length - 1].width > 150) {
+          rangeImage[rangedata.length - 1].resize(150, 0);
+        }
+      } else if (mode == 1) {
+        rangeImage[rangedata.length - 1] = createImage(elx, ely);
+        rangeImage[rangedata.length - 1] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
+
+        if (rangeImage[rangedata.length - 1].width > 150) {
+          rangeImage[rangedata.length - 1].resize(150, 0);
+        }
       }
+      x = -10;
+      y = -10;
+      ax = -10;
+      ay = -10;
+
 
     }
     imageGeneration(img.width, img.height);
@@ -864,7 +944,7 @@ function keyPressed() {
   } else if (framerate > 5 && keyCode === DOWN_ARROW) {
     framerate = framerate - 5;
   }
-  console.log(framerate);
+
 }
 
 function imageGeneration(wi, he) {
@@ -963,7 +1043,7 @@ function imageReset(imG) {
   img3 = createImage(img.width, img.height);
   //画像の座標
   //始点
-  imgx = 700 - imG.width / 2;
+  imgx = width / 2 - imG.width / 2;
   imgy = 430 - imG.height / 2;
   //終点
   imgEx = imgx + imG.width;
@@ -971,6 +1051,54 @@ function imageReset(imG) {
 
   rangedata.length = 0;
   PixelData.length = 0;
+}
+function Export() {
+  document.getElementById("Twitter").style.display = "block";
+  var sketch1 = function (p) {
+    p.setup = function () {
+      p.createCanvas(1200, 800);
+    };
+
+    p.draw = function () {
+      p.fill(255);
+      p.textSize(50);
+      p.background(31, 30, 99);
+      p.text("出力中", 520, 400);
+
+    };
+  };
+  new p5(sketch1, "container1");
+
+  hozon = true;
+  p5Canvas = createCanvas(originalWidth, originalheight);
+  p5Canvas.hide();
+
+  img0 = createImage(originalWidth, originalheight);
+  img1 = createImage(originalWidth, originalheight);
+  img2 = createImage(originalWidth, originalheight);
+  img3 = createImage(originalWidth, originalheight);
+
+  //rangedataを元の画像サイズ版にする
+  for (i = 0; i < rangedata.length; i++) {
+
+    rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, originalWidth);
+    rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, originalheight);
+    rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, originalWidth);
+    rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, originalheight);
+
+    emboss(i, originalWidth, originalheight);
+  }
+
+  imageGeneration(originalWidth, originalheight);
+
+
+  //createLoop({duration:3, gif:{download:true}});
+  save(img0, "1.png");
+  save(img1, "2.png");
+  save(img2, "3.png");
+  save(img3, "4.png");
+  imgcount = 0;
+
 }
 
 //speedを求める関数

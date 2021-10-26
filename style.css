@@ -3,3 +3,11 @@ p {
   top: 13px;
   left: 800px;
 }
+
+#number2 {
+  position: absolute;
+  top: 130px;
+  left: 1075px;
+  width: 50px;
+  height: 30px;
+}
