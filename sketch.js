@@ -700,8 +700,10 @@ function mousePressed() {
           Speed(efx, efy, elx, ely, rangedata[e].mode);
 
           //右メニューでの画像と本画像のクリック位置を合わせる
-          let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, imgx, imgEx);
-          let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
+          console.log(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, rangedata[e].efX, rangedata[e].elX);
+          console.log(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
+          let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, rangedata[e].efX, rangedata[e].elX);
+          let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, rangedata[e].efY, rangedata[e].elY);
 
           rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 0, 0, Movemode));
           PixelData.splice(e, 1);
@@ -816,6 +818,7 @@ function mousePressed() {
           }
           rangedata.splice(i, 1);
           rangeImage.splice(i, 1);
+
         }
       }
 
