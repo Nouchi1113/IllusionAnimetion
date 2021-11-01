@@ -101,6 +101,9 @@ var canvas;
 
 //保存するフレーム数
 var saveFrame;
+
+let allsteps;
+
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -164,9 +167,11 @@ function draw() {
   frameRate(framerate);
 
   if (hozon) {
-    if (ExportStep <= 3) {
+    if (ExportStep < allsteps) {
+
       ExportStep++;
       Export(hozonWidth, hozonHeight, ExportStep);
+
     } else {
       if (imgcount % 4 == 0) {
         image(img0, 0, 0);
@@ -1030,85 +1035,114 @@ function keyPressed() {
 }
 
 function imageGeneration(wi, he) {
-  syorityu = true;
-  img0.loadPixels();
-  img1.loadPixels();
-  img2.loadPixels();
-  img3.loadPixels();
 
-  //何故かずれるので１マスずらしてる
-  for (j = 0; j < he - diff; j++) {
-    for (i = 0; i < wi - diff; i++) {
-      let c;
-      if (wi == img.width && he == img.height) {
-        c = img.get(i, j);
-      } else {
-        c = imgOriginal.get(i, j);
-      }
-      img0.set(i, j, c);
-      img1.set(i, j, c);
-      img2.set(i, j, c);
-      img3.set(i, j, c);
-    }
-  }
 
-  for (a = 0; a < rangedata.length; a++) {
+  if (hozon) {
+    if (ExportStep == rangedata.length + 2) {
+      syorityu = true;
+      img0.loadPixels();
+      img1.loadPixels();
+      img2.loadPixels();
+      img3.loadPixels();
 
-    for (j = 0; j < he - diff; j++) {
-      for (i = 0; i < wi - diff; i++) {
-        let c;
-        if (PixelData[a][0][i + (wi - diff) * j] == 1) {
+      for (j = 0; j < he - diff; j++) {
+        for (i = 0; i < wi - diff; i++) {
+          let c;
           if (wi == img.width && he == img.height) {
             c = img.get(i, j);
           } else {
             c = imgOriginal.get(i, j);
           }
           img0.set(i, j, c);
+          img1.set(i, j, c);
+          img2.set(i, j, c);
+          img3.set(i, j, c);
         }
       }
-    }
-
-
-    for (j = 0; j < he - diff; j++) {
-      for (i = 0; i < wi - diff; i++) {
-        if (PixelData[a][0][i + (wi - diff) * j] == 1) {
-          img1.set(i, j, color(PixelData[a][1][i + (wi - diff) * j]));
-        }
-      }
-    }
-
-
-    for (j = 0; j < he - diff; j++) {
-      for (i = 0; i < wi - diff; i++) {
-        if (PixelData[a][0][i + (wi - diff) * j] == 1) {
-          if (wi == img.width && he == img.height) {
-            c = img.get(i, j);
-          } else {
-            c = imgOriginal.get(i, j);
+    } else if (ExportStep >= rangedata.length + 3 && ExportStep < rangedata.length + 3 + rangedata.length) {
+      a = ExportStep - (rangedata.length + 3)
+      for (j = 0; j < he - diff; j++) {
+        for (i = 0; i < wi - diff; i++) {
+          let c;
+          if (PixelData[a][0][i + (wi - diff) * j] == 1) {
+            if (wi == img.width && he == img.height) {
+              c = img.get(i, j);
+            } else {
+              c = imgOriginal.get(i, j);
+            }
+            img0.set(i, j, c);
+            img1.set(i, j, color(PixelData[a][1][i + (wi - diff) * j]));
+            img2.set(i, j, color(255 -
+              red(c), 255 - blue(c), 255 - green(c)));
+            img3.set(i, j, color(PixelData[a][2][i + (wi - diff) * j]));
           }
-          img2.set(i, j, color(255 -
-            red(c), 255 - blue(c), 255 - green(c)));
         }
       }
     }
+    else if (ExportStep == rangedata.length + 3 + rangedata.length) {
+      img0.updatePixels();
+      img1.updatePixels();
+      img2.updatePixels();
+      img3.updatePixels();
 
+      syorityu = false;
+    }
+
+  } else {
+
+    syorityu = true;
+    img0.loadPixels();
+    img1.loadPixels();
+    img2.loadPixels();
+    img3.loadPixels();
+
+    //何故かずれるので１マスずらしてる
     for (j = 0; j < he - diff; j++) {
       for (i = 0; i < wi - diff; i++) {
-        if (PixelData[a][0][i + (wi - diff) * j] == 1) {
-          img3.set(i, j, color(PixelData[a][2][i + (wi - diff) * j]));
+        let c;
+        if (wi == img.width && he == img.height) {
+          c = img.get(i, j);
+        } else {
+          c = imgOriginal.get(i, j);
         }
+        img0.set(i, j, c);
+        img1.set(i, j, c);
+        img2.set(i, j, c);
+        img3.set(i, j, c);
       }
     }
 
 
+    for (a = 0; a < rangedata.length; a++) {
 
+      for (j = 0; j < he - diff; j++) {
+        for (i = 0; i < wi - diff; i++) {
+          let c;
+          if (PixelData[a][0][i + (wi - diff) * j] == 1) {
+            if (wi == img.width && he == img.height) {
+              c = img.get(i, j);
+            } else {
+              c = imgOriginal.get(i, j);
+            }
+            img0.set(i, j, c);
+            img1.set(i, j, color(PixelData[a][1][i + (wi - diff) * j]));
+            img2.set(i, j, color(255 -
+              red(c), 255 - blue(c), 255 - green(c)));
+            img3.set(i, j, color(PixelData[a][2][i + (wi - diff) * j]));
+          }
+        }
+      }
+
+
+
+    }
+    img0.updatePixels();
+    img1.updatePixels();
+    img2.updatePixels();
+    img3.updatePixels();
+
+    syorityu = false;
   }
-  img0.updatePixels();
-  img1.updatePixels();
-  img2.updatePixels();
-  img3.updatePixels();
-
-  syorityu = false;
 }
 
 function imageReset(imG) {
@@ -1137,6 +1171,7 @@ function imageReset(imG) {
 function Export(wid, hei, exportStep) {
   if (exportStep == 0) {
     mp4 = true;
+    allsteps = rangedata.length + 3 + rangedata.length + 1;
 
     if (Format == "webm") {
       capturer = new CCapture({
@@ -1161,9 +1196,12 @@ function Export(wid, hei, exportStep) {
     input.hide();
     document.getElementById("number2").style.display = "none";
     document.getElementById("Twitter").style.display = "block";
+
     var sketch1 = function (p) {
+
       p.setup = function () {
         p.createCanvas(1200, 800);
+
       };
 
       p.draw = function () {
@@ -1172,10 +1210,11 @@ function Export(wid, hei, exportStep) {
         p.background(70);
         p.rect(400, 375, 400, 50);
         p.fill(0, 255, 0);
-        p.rect(400, 375, ExportStep * 100, 50);
+        var mapStep = map(ExportStep, 0, allsteps, 0, 400);
+        p.rect(400, 375, mapStep, 50);
         p.fill(255);
-        p.text(ExportStep, 480, 300);
-        p.text("出力中", 520, 300);
+        p.text("出力中", 480, 300);
+        p.text("(" + ExportStep + "/" + allsteps + ")", 640, 300);
       };
 
 
@@ -1192,29 +1231,29 @@ function Export(wid, hei, exportStep) {
     img3 = createImage(wid, hei);
 
     ExportStep++;
-  } else if (exportStep == 2) {
+  } else if (2 <= exportStep && exportStep < rangedata.length + 2) {
     //rangedataを元の画像サイズ版にする
     if (wid != img.width) {
-      for (i = 0; i < rangedata.length; i++) {
-        console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
-        rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, wid);
-        rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, hei);
-        rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, wid);
-        rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, hei);
-        console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
-        emboss(i, wid, hei);
-      }
+      i = ExportStep - 2;
+      rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, wid);
+      rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, hei);
+      rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, wid);
+      rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, hei);
+      emboss(i, wid, hei);
     }
-  } else if (exportStep == 3) {
+
+  } else if (exportStep >= rangedata.length + 2 && exportStep <= rangedata.length + 3 + rangedata.length) {
     imageGeneration(wid, hei);
 
-    save(img0, "1.png");
-    save(img1, "2.png");
-    save(img2, "3.png");
-    save(img3, "4.png");
+
+    //save(img0, "1.png");
+    //save(img1, "2.png");
+    //save(img2, "3.png");
+    //save(img3, "4.png");
 
     imgcount = 0;
   }
+
   console.log(ExportStep);
 
 }
