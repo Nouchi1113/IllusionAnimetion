@@ -78,7 +78,29 @@ var rmey = 790;
 
 //右メニューに表示する最初の画像の番号
 var rfn = 0;
+//範囲を見えるようにするかのフラグ
+var vis = true;
 
+//出力時のステップ段階
+var ExportStep = 0;
+var hozonWidth, hozonHeight;
+var gif = false;
+
+//出力する動画フォーマット
+var Format = 'gif';
+
+
+var capturer = new CCapture({
+  format: 'webm',
+  framerate: framerate,
+  verbose: true,
+  name: 01,
+  timeLimit: 20
+});
+var canvas;
+
+//保存するフレーム数
+var saveFrame;
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -132,45 +154,51 @@ function handleFile(file) {
     img = null;
   }
 }
-var capturer = new CCapture({
-  format: 'webm',
-  framerate: 10,
-  verbose: true,
-  name: 01,
-  timeLimit: 20
-});
-var canvas;
+
 
 
 
 function draw() {
+
   framerate = Number(document.getElementById("number2").value);
   frameRate(framerate);
+
   if (hozon) {
-    if (mp4 && imgcount == 0) {
-      capturer.start();
+    if (ExportStep <= 3) {
+      ExportStep++;
+      Export(hozonWidth, hozonHeight, ExportStep);
+    } else {
+      if (imgcount % 4 == 0) {
+        image(img0, 0, 0);
+      } else if (imgcount % 4 == 1) {
+        image(img1, 0, 0);
+      } else if (imgcount % 4 == 2) {
+        image(img2, 0, 0);
+      } else if (imgcount % 4 == 3) {
+        image(img3, 0, 0);
+      }
 
-    } else if (mp4 && imgcount == 92) {
-      capturer.save();
-      capturer.stop();
+      if (mp4 && imgcount == 0) {
+        capturer.start();
+      }
+
+      if (imgcount <= saveFrame) {　//4秒後Captureを停止する
+        capturer.capture(document.getElementById('defaultCanvas0'));
+      }
+      else if (mp4 && imgcount == saveFrame + 1) {
+        capturer.save();
+        capturer.stop();
+      }
+
+      imgcount++;
+      //console.log(imgcount);
+
     }
-
-    if (imgcount % 4 == 0) {
-      image(img0, 0, 0);
-    } else if (imgcount % 4 == 1) {
-      image(img1, 0, 0);
-    } else if (imgcount % 4 == 2) {
-      image(img2, 0, 0);
-    } else if (imgcount % 4 == 3) {
-      image(img3, 0, 0);
-    }
-
-    imgcount++;
   } else {
+
     document.getElementById("Twitter").style.display = "none";
 
     background(70);
-    //background(68, 114, 196);
 
     //GUI
     stroke(140);
@@ -296,7 +324,26 @@ function draw() {
     triangle(1180, 540, 1170, 520, 1190, 520);
     stroke(30, 31, 99);
     fill(255);
-    text("動画出力:", 920, 45);
+    //動画出力関係
+
+    text("動画出力:", 590, 45);
+
+    text("低画質", 690, 45);
+
+    fill(111, 98, 178);
+    rect(763, 15, 60, 40, 5);
+
+    fill(255);
+    text("GIF", 775, 45);
+
+    fill(111, 98, 178);
+    rect(840, 15, 80, 40, 5);
+
+    fill(255);
+    text("WebM", 850, 45);
+
+
+    text("高画質", 940, 45);
 
     fill(111, 98, 178);
     rect(1013, 15, 60, 40, 5);
@@ -330,14 +377,16 @@ function draw() {
         imgcount = 0;
       }
 
-      //既に選択している範囲を見えるようにする
-      for (r = 0; r < rangedata.length; r++) {
-        stroke(0, 255, 0);
-        noFill();
-        if (rangedata[r].mode == 0) {
-          rect(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
-        } else if (rangedata[r].mode == 1) {
-          ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
+      if (vis) {
+        //既に選択している範囲を見えるようにする
+        for (r = 0; r < rangedata.length; r++) {
+          stroke(0, 255, 0);
+          noFill();
+          if (rangedata[r].mode == 0) {
+            rect(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
+          } else if (rangedata[r].mode == 1) {
+            ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
+          }
         }
       }
     } else {
@@ -354,6 +403,7 @@ function draw() {
       ellipse(x, y, ax, ay);
     }
   }
+
 }
 
 
@@ -379,7 +429,7 @@ function emboss(num, wi, he) {
       //四角の場合
       if (rangedata[num].mode == 0) {
 
-        if (rangedata[num].efX < i + imgx && rangedata[num].elX > i + imgx && rangedata[num].efY < j + imgy && rangedata[num].elY > j + imgy) {
+        if (rangedata[num].efX <= i + imgx && rangedata[num].elX >= i + imgx && rangedata[num].efY <= j + imgy && rangedata[num].elY >= j + imgy) {
           pixel.splice(i + (wi - diff) * j, 0, 1);
 
         } else {
@@ -552,7 +602,6 @@ function emboss(num, wi, he) {
       }
     }
   }
-
 
 
   Menu.push(Embpixel1);
@@ -830,17 +879,45 @@ function mousePressed() {
 
     //動画出力
     //GIF　rect(1013, 15, 60, 40, 5);  
+    if (rangedata.length > 0) {
 
-    if (mouseX > 1013 && mouseX < 1073 && mouseY > 0 && mouseY < 60 && po == 0) {
-      Export();
-      createLoop({ duration: 4, gif: { download: true } });
+      if (mouseX > 763 && mouseX < 823 && mouseY > 0 && mouseY < 60 && po == 0) {
+        hozonWidth = img.width;
+        hozonHeight = img.height;
+        Format = 'gif'
+        Export(img.width, img.height, 0);
+        //gif = true;
+
+
+      }
+
+      //WEBM rect(1090, 15, 80, 40, 5);
+      if (mouseX > 840 && mouseX < 920 && mouseY > 0 && mouseY < 60 && po == 0) {
+        hozonWidth = img.width;
+        hozonHeight = img.height;
+        Format = 'webm';
+        Export(img.width, img.height, 0);
+
+      }
+
+      if (mouseX > 1013 && mouseX < 1073 && mouseY > 0 && mouseY < 60 && po == 0) {
+        hozonWidth = originalWidth;
+        hozonHeight = originalheight;
+        Format = 'gif';
+        Export(originalWidth, originalheight, 0);
+
+        //gif = true;
+      }
+
+      //WEBM rect(1090, 15, 80, 40, 5);
+      if (mouseX > 1090 && mouseX < 1170 && mouseY > 0 && mouseY < 60 && po == 0) {
+        hozonWidth = originalWidth;
+        hozonHeight = originalheight;
+        Format = 'webm';
+        Export(originalWidth, originalheight, 0);
+      }
     }
 
-    //WEBM rect(1090, 15, 80, 40, 5);
-    if (mouseX > 1090 && mouseX < 1170 && mouseY > 0 && mouseY < 60 && po == 0) {
-      Export();
-      mp4 = true;
-    }
   }
 }
 
@@ -942,10 +1019,12 @@ function mouseReleased() {
 }
 
 function keyPressed() {
-  if (keyCode === UP_ARROW) {
-    framerate = framerate + 5;
-  } else if (framerate > 5 && keyCode === DOWN_ARROW) {
-    framerate = framerate - 5;
+  if (key == "s") {
+    if (vis) {
+      vis = false;
+    } else {
+      vis = true;
+    }
   }
 
 }
@@ -958,14 +1037,13 @@ function imageGeneration(wi, he) {
   img3.loadPixels();
 
   //何故かずれるので１マスずらしてる
-  for (j = 1; j < he - diff; j++) {
-    for (i = 1; i < wi - diff; i++) {
+  for (j = 0; j < he - diff; j++) {
+    for (i = 0; i < wi - diff; i++) {
       let c;
       if (wi == img.width && he == img.height) {
         c = img.get(i, j);
       } else {
         c = imgOriginal.get(i, j);
-
       }
       img0.set(i, j, c);
       img1.set(i, j, c);
@@ -1055,52 +1133,89 @@ function imageReset(imG) {
   rangedata.length = 0;
   PixelData.length = 0;
 }
-function Export() {
-  document.getElementById("Twitter").style.display = "block";
-  var sketch1 = function (p) {
-    p.setup = function () {
-      p.createCanvas(1200, 800);
+
+function Export(wid, hei, exportStep) {
+  if (exportStep == 0) {
+    mp4 = true;
+
+    if (Format == "webm") {
+      capturer = new CCapture({
+        format: Format,
+        framerate: framerate,
+        verbose: true,
+        name: 01,
+        timeLimit: 20
+      });
+      saveFrame = 92;
+    } else {
+      console.log("gif");
+      capturer = new CCapture({
+        format: Format,
+        framerate: framerate,
+        name: 01,
+        workersPath: './js/',
+        verbose: true
+      });
+      saveFrame = 3;
+    }
+    input.hide();
+    document.getElementById("number2").style.display = "none";
+    document.getElementById("Twitter").style.display = "block";
+    var sketch1 = function (p) {
+      p.setup = function () {
+        p.createCanvas(1200, 800);
+      };
+
+      p.draw = function () {
+        p.fill(255);
+        p.textSize(50);
+        p.background(70);
+        p.rect(400, 375, 400, 50);
+        p.fill(0, 255, 0);
+        p.rect(400, 375, ExportStep * 100, 50);
+        p.fill(255);
+        p.text(ExportStep, 480, 300);
+        p.text("出力中", 520, 300);
+      };
+
+
     };
+    new p5(sketch1, "container1");
 
-    p.draw = function () {
-      p.fill(255);
-      p.textSize(50);
-      p.background(31, 30, 99);
-      p.text("出力中", 520, 400);
+    hozon = true;
+    p5Canvas = createCanvas(wid - diff, hei - diff);
+    p5Canvas.hide();
 
-    };
-  };
-  new p5(sketch1, "container1");
+    img0 = createImage(wid, hei);
+    img1 = createImage(wid, hei);
+    img2 = createImage(wid, hei);
+    img3 = createImage(wid, hei);
 
-  hozon = true;
-  p5Canvas = createCanvas(originalWidth, originalheight);
-  p5Canvas.hide();
+    ExportStep++;
+  } else if (exportStep == 2) {
+    //rangedataを元の画像サイズ版にする
+    if (wid != img.width) {
+      for (i = 0; i < rangedata.length; i++) {
+        console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
+        rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, wid);
+        rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, hei);
+        rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, wid);
+        rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, hei);
+        console.log(rangedata[i].efX, rangedata[i].efY, rangedata[i].elX, rangedata[i].elY);
+        emboss(i, wid, hei);
+      }
+    }
+  } else if (exportStep == 3) {
+    imageGeneration(wid, hei);
 
-  img0 = createImage(originalWidth, originalheight);
-  img1 = createImage(originalWidth, originalheight);
-  img2 = createImage(originalWidth, originalheight);
-  img3 = createImage(originalWidth, originalheight);
+    save(img0, "1.png");
+    save(img1, "2.png");
+    save(img2, "3.png");
+    save(img3, "4.png");
 
-  //rangedataを元の画像サイズ版にする
-  for (i = 0; i < rangedata.length; i++) {
-
-    rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, originalWidth);
-    rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, originalheight);
-    rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, originalWidth);
-    rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, originalheight);
-
-    emboss(i, originalWidth, originalheight);
+    imgcount = 0;
   }
-
-  imageGeneration(originalWidth, originalheight);
-
-
-  //createLoop({duration:3, gif:{download:true}});
-  save(img0, "1.png");
-  save(img1, "2.png");
-  save(img2, "3.png");
-  save(img3, "4.png");
-  imgcount = 0;
+  console.log(ExportStep);
 
 }
 
