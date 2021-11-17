@@ -1,5 +1,5 @@
 var imgcount = 0;
-var diff = 3;//どれぐらいずらすか
+var diff = 4;//どれぐらいずらすか
 
 var rangedata = [];
 
@@ -104,6 +104,7 @@ var saveFrame;
 
 let allsteps;
 
+
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -162,10 +163,16 @@ function handleFile(file) {
 
 
 function draw() {
-
   framerate = Number(document.getElementById("number2").value);
   frameRate(framerate);
 
+  //エッジ計算
+  //document.getElementById("Edge").value = diff;
+  //document.getElementById("DPI").value = Math.round(diff * 25.4 / 1.12);
+  // diff = Number(document.getElementById("Edge").value);
+  if (rangedata.length == 0) {
+    diff = Math.round(1.12 / (25.4 / Number(document.getElementById("DPI").value)));
+  }
   if (hozon) {
     if (ExportStep < allsteps) {
 
@@ -294,12 +301,19 @@ function draw() {
 
     rect(rmx, rmy, rmex - rmx, rmey - rmy);
 
-    stroke(140);
-    textSize(20);
+
+
     fill(31, 30, 99);
-    text("切替速度(fps)", 1040, 95);
+    text("錯視最適化", 1040, 95);
 
+    textSize(10);
+    text("DPI(ディスプレイ)", 1010, 125);
+    text("エッジサイズ", 1105, 125);
 
+    textSize(20);
+    text(diff, 1130, 160);
+
+    fill(31, 30, 99);
     text("選択範囲", 1055, 200);
 
     //右メニューで画像を出す
@@ -325,10 +339,14 @@ function draw() {
     }
 
     //右メニューの画像を動かす矢印
+    fill(31, 30, 99);
     triangle(1180, 300, 1170, 320, 1190, 320);
     triangle(1180, 540, 1170, 520, 1190, 520);
     stroke(30, 31, 99);
     fill(255);
+    //画面上部
+    //切り替え速度
+    text("切替速度(fps):", 320, 45);
     //動画出力関係
 
     text("動画出力:", 590, 45);
@@ -955,71 +973,96 @@ function mouseDragged() {
 // ドラッグ終了時に四角が消えて指定した部分が動く
 function mouseReleased() {
   if (mouseButton == RIGHT) {
-    if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
+    if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930
+    ) {
       efx = Efx;
       efy = Efy;
+      //画像内で領域選択がされているか判定
+      var exCenter = (mouseX + Efx) / 2;
+      var eyCenter = (mouseY + Efy) / 2;
+      var imxCenter = (imgx + imgEx) / 2;
+      var imyCenter = (imgy + imgEy) / 2;
+      var xCenDist = abs(exCenter - imxCenter);
+      var yCenDist = abs(eyCenter - imyCenter);
+      var xsizeSum = (abs(mouseX - Efx) + abs(imgEx - imgx)) / 2;
+      var ysizeSum = (abs(mouseY - Efy) + abs(imgEy - imgy)) / 2;
+      console.log(exCenter, eyCenter, imxCenter, imyCenter, xCenDist, xsizeSum, yCenDist, ysizeSum);
+      if (xCenDist < xsizeSum && yCenDist < ysizeSum) {
 
-      //選択範囲がウィンドウを越えた場合
-      if (mode == 0) {
-        if (mouseX >= imgEx) {
-          elx = imgEx;
-        } else {
-          elx = mouseX;
+
+        //選択範囲がウィンドウを越えた場合
+        if (mode == 0) {
+          if (mouseX >= imgEx) {
+            elx = imgEx;
+          } else {
+            elx = mouseX;
+          }
+
+          if (efx <= imgx) {
+            efx = imgx;
+          }
+          if (efy <= imgy) {
+            efy = imgy;
+          }
+
+          if (mouseY >= imgEy) {
+            ely = imgEy;
+          } else {
+            ely = mouseY;
+          }
+          //逆位置からドラックした場合
+          if (efx >= elx) {
+            var a = elx;
+            elx = efx;
+            efx = a;
+          }
+          if (efy >= ely) {
+            var a = ely;
+            ely = efy;
+            efy = a;
+          }
+
+        } else if (mode == 1) {
+          efx = x;
+          efy = y;
+          elx = ax;
+          ely = ay;
         }
-        if (mouseY >= imgEy) {
-          ely = imgEy;
-        } else {
-          ely = mouseY;
+
+
+        speed = 3;
+
+        rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
+
+        emboss(rangedata.length - 1, img.width, img.height);
+
+
+        //右メニューに出す画像データを取得する
+        if (mode == 0) {
+          rangeImage[rangedata.length - 1] = createImage(elx - efx, ely - efy);
+          rangeImage[rangedata.length - 1] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
+
+          if (rangeImage[rangedata.length - 1].width > 150) {
+            rangeImage[rangedata.length - 1].resize(150, 0);
+          }
+        } else if (mode == 1) {
+          rangeImage[rangedata.length - 1] = createImage(elx, ely);
+          rangeImage[rangedata.length - 1] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
+
+          if (rangeImage[rangedata.length - 1].width > 150) {
+            rangeImage[rangedata.length - 1].resize(150, 0);
+          }
         }
-        //逆位置からドラックした場合
-        if (efx >= elx) {
-          var a = elx;
-          elx = efx;
-          efx = a;
-        }
-        if (efy >= ely) {
-          var a = ely;
-          ely = efy;
-          efy = a;
-        }
-      } else if (mode == 1) {
-        efx = x;
-        efy = y;
-        elx = ax;
-        ely = ay;
-      }
-
-      speed = 3;
-
-      rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
-
-      emboss(rangedata.length - 1, img.width, img.height);
 
 
-      //右メニューに出す画像データを取得する
-      if (mode == 0) {
-        rangeImage[rangedata.length - 1] = createImage(elx - efx, ely - efy);
-        rangeImage[rangedata.length - 1] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
-
-        if (rangeImage[rangedata.length - 1].width > 150) {
-          rangeImage[rangedata.length - 1].resize(150, 0);
-        }
-      } else if (mode == 1) {
-        rangeImage[rangedata.length - 1] = createImage(elx, ely);
-        rangeImage[rangedata.length - 1] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
-
-        if (rangeImage[rangedata.length - 1].width > 150) {
-          rangeImage[rangedata.length - 1].resize(150, 0);
-        }
+        imageGeneration(img.width, img.height);
       }
       x = -10;
       y = -10;
       ax = -10;
       ay = -10;
-
-
     }
-    imageGeneration(img.width, img.height);
+
   }
 }
 
@@ -1170,6 +1213,7 @@ function imageReset(imG) {
 
 function Export(wid, hei, exportStep) {
   if (exportStep == 0) {
+    diff = Math.round(1.12 / (25.4 / Number(document.getElementById("DPI").value)));
     mp4 = true;
     allsteps = rangedata.length + 3 + rangedata.length + 1;
 

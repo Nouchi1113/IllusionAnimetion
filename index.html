@@ -15,12 +15,17 @@
 </head>
 
 <body>
+
+    <body oncontextmenu="return false;"></body>
     <p id="Twitter"><a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
             data-url="https://nouchi1113.github.io/IllusionAnimetion/" data-text="ダウンロードされた映像を添付してツイートしてください"
             data-hashtag="IllusionAnimetion" data-size="large">Tweet</a></p>
+    <!--切り替え速度-->
+    <input type="number" id="number2" value="10" max="60" min="1" />
+    <!--エッジサイズ-->
+    <input type="number" id="DPI" value="96" max="200" min="30" />
 
-    <input type="number" id="number2" value="10" max="60" max="1" />
-
+    <!--<input type="number" id="Edge" value="5" max="60" min="1" />-->
 
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 

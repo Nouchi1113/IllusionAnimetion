@@ -6,8 +6,22 @@ p {
 
 #number2 {
   position: absolute;
-  top: 130px;
-  left: 1075px;
+  top: 25px;
+  left: 480px;
+  width: 50px;
+  height: 30px;
+}
+#DPI {
+  position: absolute;
+  top: 140px;
+  left: 1035px;
+  width: 50px;
+  height: 30px;
+}
+#Edge {
+  position: absolute;
+  top: 140px;
+  left: 1115px;
   width: 50px;
   height: 30px;
 }
