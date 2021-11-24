@@ -138,10 +138,11 @@ function setup() {
   Jiyu.resize(105, 50);
 
   Sakujo.resize(70, 70);
+
   originalWidth = img.width;
   originalheight = img.height;
 
-  imageReset(img);
+  imageLoaded();
 
   savepixel = [];//Moveangle,一つ目の画像の角度，２つ目
 
@@ -151,23 +152,50 @@ function setup() {
 }
 
 function imageLoaded() { //
+  originalWidth = img.width;
+  originalheight = img.height;
+
 
   img.resize(400, 0);
-
   if (img.width >= 400) {
     img.resize(400, 0);
   } else if (img.height >= 300) {
     img.resize(0, 300);
   }
+  img0 = createImage(img.width, img.height);
+  img1 = createImage(img.width, img.height);
+  img2 = createImage(img.width, img.height);
+  img3 = createImage(img.width, img.height);
+  //始点
+  imgx = width / 2 - img.width / 2;
+  imgy = 430 - img.height / 2;
+
+  //終点
+  imgEx = imgx + img.width;
+  imgEy = imgy + img.height;
+
+  img0.loadPixels();
+
+  for (j = 0; j < img.height - diff; j++) {
+    for (i = 0; i < img.width - diff; i++) {
+      c = img.get(i, j);
+      img0.set(i, j, c);
+    }
+  }
+  img0.updatePixels();
+
+  rangedata.length = 0;
+  PixelData.length = 0;
 }
 
 function handleFile(file) {
   print(file);
   if (file.type === 'image') {
     img = loadImage(file.data, imageLoaded);
+
     originalWidth = img.width;
     soriginalheight = img.height;
-    imageReset(img);
+
   } else {
     img = null;
   }
@@ -217,7 +245,7 @@ function draw() {
       }
 
       imgcount++;
-      //console.log(imgcount);
+
 
     }
   } else {
@@ -431,7 +459,7 @@ function draw() {
 
       //領域移動モード中は動きを止める
       if (areaMovement) {
-        image(img, imgx, imgy);
+        image(img0, imgx, imgy);
       }
 
       if (vis) {
@@ -441,7 +469,7 @@ function draw() {
           noFill();
           if (rangedata[r].mode == 0) {
             if (areaMovement && rangeNo == r && moveNow) {
-              console.log(moveNow);
+
               movex = beforeX - mouseX;
               movey = beforeY - mouseY;
               rect(rangedata[r].efX - movex, rangedata[r].efY - movey, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
@@ -451,7 +479,7 @@ function draw() {
 
           } else if (rangedata[r].mode == 1) {
             if (areaMovement && rangeNo == r && moveNow) {
-              console.log(moveNow);
+
               movex = beforeX - mouseX;
               movey = beforeY - mouseY;
               ellipse(rangedata[r].efX - movex, rangedata[r].efY - movey, rangedata[r].elX, rangedata[r].elY);
@@ -463,7 +491,7 @@ function draw() {
       }
 
     } else {
-      image(img, imgx, imgy);
+      image(img0, imgx, imgy);
     }
     rangesize = rangedata.length;
 
@@ -734,7 +762,7 @@ function mousePressed() {
             beforeX = mouseX;
             beforeY = mouseY;
             moveNow = true;
-            console.log("true");
+
           } else if (rangedata[l].mode == 1) {
             var a, b;
             if (rangedata[l].elX >= rangedata[l].elY) {
@@ -749,7 +777,7 @@ function mousePressed() {
               beforeX = mouseX;
               beforeY = mouseY;
               moveNow = true;
-              console.log("true");
+
             }
 
 
@@ -833,11 +861,11 @@ function mousePressed() {
           for (k = 0; k < rangedata.length; k++) {
             emboss(k, img.width, img.height);
           }
-          rangeImage[rangedata.length - 1] = createImage(elx - efx, ely - efy);
-          rangeImage[rangedata.length - 1] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
+          rangeImage.splice(0, 0, createImage(elx - efx, ely - efy));
+          rangeImage[0] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
 
-          if (rangeImage[rangedata.length - 1].width > 150) {
-            rangeImage[rangedata.length - 1].resize(150, 0);
+          if (rangeImage[0].width > 150) {
+            rangeImage[0].resize(150, 0);
           }
         }
 
@@ -859,8 +887,7 @@ function mousePressed() {
             Speed(efx, efy, elx, ely, rangedata[e].mode);
 
             //右メニューでの画像と本画像のクリック位置を合わせる
-            console.log(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, rangedata[e].efX, rangedata[e].elX);
-            console.log(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
+
             let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, rangedata[e].efX, rangedata[e].elX);
             let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, rangedata[e].efY, rangedata[e].elY);
 
@@ -915,7 +942,7 @@ function mousePressed() {
     }
   }
   //指定ドラッグスタート座標
-  if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
+  if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930 && !areaMovement) {
 
 
     if (mouseButton == RIGHT) {
@@ -938,7 +965,7 @@ function mousePressed() {
       mode = 1;
     }
     //領域移動 rect(40, 290, 130, 45);
-    if (mouseX > 40 && mouseX < 170 && mouseY > 290 && mouseY < 335) {
+    if (mouseX > 40 && mouseX < 170 && mouseY > 290 && mouseY < 335 && rangedata.length > 0) {
       areaMovement = true;
       Movemode = -1;
     }
@@ -1031,7 +1058,7 @@ function mousePressed() {
 
 // ドラッグ中にマウスの場所が四角の終点になる
 function mouseDragged() {
-  if (mouseButton == RIGHT) {
+  if (mouseButton == RIGHT && !areaMovement) {
     if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
 
       if (mode == 0) {
@@ -1060,8 +1087,8 @@ function mouseDragged() {
 
 // ドラッグ終了時に四角が消えて指定した部分が動く
 function mouseReleased() {
-  if (mouseButton == RIGHT || (mouseButton == LEFT && moveNow)) {
-    if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
+  if (mouseButton == RIGHT && !areaMovement || (mouseButton == LEFT && moveNow)) {
+    if ((mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930)) {
       efx = Efx;
       efy = Efy;
       if (mouseButton == LEFT && moveNow) {
@@ -1081,6 +1108,7 @@ function mouseReleased() {
         ely = mouseY;
       }
 
+
       //画像内で領域選択がされているか判定
       var exCenter = (elx + efx) / 2;
       var eyCenter = (ely + efy) / 2;
@@ -1091,7 +1119,9 @@ function mouseReleased() {
       var xsizeSum = (abs(elx - efx) + abs(imgEx - imgx)) / 2;
       var ysizeSum = (abs(ely - efy) + abs(imgEy - imgy)) / 2;
       if (xCenDist < xsizeSum && yCenDist < ysizeSum) {
-        console.log(efx, efy, elx, ely);
+
+
+
 
         //選択範囲がウィンドウを越えた場合
         if (mode == 0) {
@@ -1132,9 +1162,10 @@ function mouseReleased() {
 
 
         if (moveNow) {
+          PixelData.splice(rangeNo, 1);
           rangedata.splice(rangeNo, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, rangedata[rangeNo].movemode));
           gazouNo = rangeNo;
-          console.log(rangedata);
+
         } else {
           rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
           gazouNo = rangedata.length - 1;
@@ -1292,28 +1323,6 @@ function imageGeneration(wi, he) {
   }
 }
 
-function imageReset(imG) {
-  imG.resize(400, 0);
-  if (imG.width >= 400) {
-    imG.resize(400, 0);
-  } else if (imG.height >= 300) {
-    imG.resize(0, 300);
-  }
-  img0 = createImage(img.width, img.height);
-  img1 = createImage(img.width, img.height);
-  img2 = createImage(img.width, img.height);
-  img3 = createImage(img.width, img.height);
-  //画像の座標
-  //始点
-  imgx = width / 2 - imG.width / 2;
-  imgy = 430 - imG.height / 2;
-  //終点
-  imgEx = imgx + imG.width;
-  imgEy = imgy + imG.height;
-
-  rangedata.length = 0;
-  PixelData.length = 0;
-}
 
 function Export(wid, hei, exportStep) {
   if (exportStep == 0) {
@@ -1402,7 +1411,7 @@ function Export(wid, hei, exportStep) {
     imgcount = 0;
   }
 
-  console.log(ExportStep);
+
 
 }
 
