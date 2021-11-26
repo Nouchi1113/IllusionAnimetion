@@ -118,7 +118,16 @@ var movey;
 //今移動させてるかどうか
 var moveNow = false;
 
+//領域の端の座標
+var upLex, upLey, upRix, upRiy, loLex, loLey, loRix, loRiy;
+//領域の端の座標（中点）
+var upMix, upMiy, leMix, leMiy, riMix, riMiy, loMix, loMiy;
 
+//領域移動時
+var moveRectx, moveRecty, moveRectEx, moveRectEy;
+
+//領域移動mode
+var movepoint;
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -460,6 +469,25 @@ function draw() {
       //領域移動モード中は動きを止める
       if (areaMovement) {
         image(img0, imgx, imgy);
+        if (rangeNo >= 0) {
+          upLex = rangedata[rangeNo].efX;
+          upLey = rangedata[rangeNo].efY;
+          upRix = rangedata[rangeNo].elX;
+          upRiy = rangedata[rangeNo].efY;
+          loLex = rangedata[rangeNo].efX;
+          loLey = rangedata[rangeNo].elY;
+          loRix = rangedata[rangeNo].elX;
+          loRiy = rangedata[rangeNo].elY;
+
+          upMix = (rangedata[rangeNo].efX + rangedata[rangeNo].elX) / 2;
+          upMiy = rangedata[rangeNo].efY;
+          leMix = rangedata[rangeNo].efX;
+          leMiy = (rangedata[rangeNo].efY + rangedata[rangeNo].elY) / 2;
+          riMix = rangedata[rangeNo].elX;
+          riMiy = (rangedata[rangeNo].efY + rangedata[rangeNo].elY) / 2;
+          loMix = (rangedata[rangeNo].efX + rangedata[rangeNo].elX) / 2;
+          loMiy = rangedata[rangeNo].elY;
+        }
       }
 
       if (vis) {
@@ -468,20 +496,33 @@ function draw() {
           stroke(0, 255, 0);
           noFill();
           if (rangedata[r].mode == 0) {
-            if (areaMovement && rangeNo == r && moveNow) {
-
-              movex = beforeX - mouseX;
-              movey = beforeY - mouseY;
-              rect(rangedata[r].efX - movex, rangedata[r].efY - movey, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
+            if (areaMovement && moveNow) {
+              rect(moveRectx, moveRecty, moveRectEx, moveRectEy);
             } else {
               rect(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
             }
+            //拡大縮小用の端の丸
+            if (rangeNo >= 0 && !moveNow && areaMovement) {
+              var elSize = 10;
+              fill(255);
 
+              ellipse(rangedata[r].efX, rangedata[r].efY, elSize, elSize);
+              ellipse(rangedata[r].elX, rangedata[r].efY, elSize, elSize);
+              ellipse(rangedata[r].efX, rangedata[r].elY, elSize, elSize);
+              ellipse(rangedata[r].elX, rangedata[r].elY, elSize, elSize);
+
+              ellipse((rangedata[r].efX + rangedata[r].elX) / 2, rangedata[r].efY, elSize, elSize);
+              ellipse(rangedata[r].efX, (rangedata[r].efY + rangedata[r].elY) / 2, elSize, elSize);
+              ellipse(rangedata[r].elX, (rangedata[r].efY + rangedata[r].elY) / 2, elSize, elSize);
+              ellipse((rangedata[r].efX + rangedata[r].elX) / 2, rangedata[r].elY, elSize, elSize);
+
+
+            }
+
+            //選択（円）の時
           } else if (rangedata[r].mode == 1) {
             if (areaMovement && rangeNo == r && moveNow) {
 
-              movex = beforeX - mouseX;
-              movey = beforeY - mouseY;
               ellipse(rangedata[r].efX - movex, rangedata[r].efY - movey, rangedata[r].elX, rangedata[r].elY);
             } else {
               ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
@@ -753,37 +794,56 @@ function mousePressed() {
   if (mouseButton == LEFT) {
     //領域移動
     if (areaMovement) {
-      if (rangedata.length > 0) {
-        for (l = 0; l < rangedata.length; l++) {
-          //領域指定
-          if (rangedata[l].mode == 0 &&
-            mouseX > rangedata[l].efX && mouseX < rangedata[l].elX && mouseY > rangedata[l].efY && mouseY < rangedata[l].elY) {
+      for (l = 0; l < rangedata.length; l++) {
+        //領域指定
+        if (rangedata[l].mode == 0) {
+          if (mouseX > rangedata[l].efX && mouseX < rangedata[l].elX && mouseY > rangedata[l].efY && mouseY < rangedata[l].elY) {
+            rangeNo = l;
+            beforeX = mouseX;
+            beforeY = mouseY;
+
+          }
+
+
+
+        } else if (rangedata[l].mode == 1) {
+          var a, b;
+          if (rangedata[l].elX >= rangedata[l].elY) {
+            a = rangedata[l].elX;
+            b = rangedata[l].elY;
+          } else {
+            b = rangedata[l].elX;
+            a = rangedata[l].elY;
+          }
+          if (sq(mouseX - rangedata[l].efX) / sq((a / 2)) + sq(mouseY - rangedata[l].efY) / sq((b / 2)) <= 1) {
             rangeNo = l;
             beforeX = mouseX;
             beforeY = mouseY;
             moveNow = true;
 
-          } else if (rangedata[l].mode == 1) {
-            var a, b;
-            if (rangedata[l].elX >= rangedata[l].elY) {
-              a = rangedata[l].elX;
-              b = rangedata[l].elY;
-            } else {
-              b = rangedata[l].elX;
-              a = rangedata[l].elY;
-            }
-            if (sq(mouseX - rangedata[l].efX) / sq((a / 2)) + sq(mouseY - rangedata[l].efY) / sq((b / 2)) <= 1) {
-              rangeNo = l;
-              beforeX = mouseX;
-              beforeY = mouseY;
-              moveNow = true;
-
-            }
-
-
           }
+
+
         }
       }
+      if (sqrt(sq(mouseX - upLex) + sq(mouseY - upLey)) < 10) {//左上
+        movepoint = 0;
+      } else if (sqrt(sq(mouseX - upRix) + sq(mouseY - upRiy)) < 10) {//右上
+        movepoint = 1;
+      } else if (sqrt(sq(mouseX - loLex) + sq(mouseY - loLey)) < 10) {//左下
+        movepoint = 2;
+      } else if (sqrt(sq(mouseX - loRix) + sq(mouseY - loRiy)) < 10) {//右下
+        movepoint = 3;
+      } else if (sqrt(sq(mouseX - upMix) + sq(mouseY - upMiy)) < 10) {//上中央
+        movepoint = 4;
+      } else if (sqrt(sq(mouseX - leMix) + sq(mouseY - leMiy)) < 10) {//左中央
+        movepoint = 5;
+      } else if (sqrt(sq(mouseX - riMix) + sq(mouseY - riMiy)) < 10) {//右中央
+        movepoint = 6;
+      } else if (sqrt(sq(mouseX - loMix) + sq(mouseY - loMiy)) < 10) {//下中央
+        movepoint = 7;
+      }
+
     } else {
       if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
 
@@ -1077,11 +1137,69 @@ function mouseDragged() {
       }
     }
   } else {//mousePressed==Left
+
     //領域移動
     if (areaMovement) {
+      movex = beforeX - mouseX;
+      movey = beforeY - mouseY;
+      //領域指定
+
+      if (rangedata[rangeNo].mode == 0) {
+        if (movepoint == 0) {//左上
+          moveRectx = mouseX;
+          moveRecty = mouseY;
+          moveRectEx = abs(rangedata[rangeNo].elX - mouseX);
+          moveRectEy = abs(rangedata[rangeNo].elY - mouseY);
+        } else if (movepoint == 1) {//右上
+          moveRectx = rangedata[rangeNo].efX
+          moveRecty = mouseY;
+          moveRectEx = abs(mouseX - rangedata[rangeNo].efX);
+          moveRectEy = abs(mouseY - rangedata[rangeNo].elY);
+        } else if (movepoint == 2) {//左下
+          moveRectx = mouseX;
+          moveRecty = rangedata[rangeNo].efY;
+          moveRectEx = abs(mouseX - rangedata[rangeNo].elX);
+          moveRectEy = abs(mouseY - rangedata[rangeNo].efY);
+        } else if (movepoint == 3) {//右下
+          moveRectx = rangedata[rangeNo].efX;
+          moveRecty = rangedata[rangeNo].efY;
+          moveRectEx = abs(mouseX - rangedata[rangeNo].efX);
+          moveRectEy = abs(mouseY - rangedata[rangeNo].efY);
+        } else if (movepoint == 4) {//上中央
+          moveRectx = rangedata[rangeNo].efX;
+          moveRecty = mouseY;
+          moveRectEx = abs(rangedata[rangeNo].elX - rangedata[rangeNo].efX);
+          moveRectEy = abs(mouseY - rangedata[rangeNo].elY);
+        } else if (movepoint == 5) {//左中央
+          moveRectx = mouseX
+          moveRecty = rangedata[rangeNo].efY;
+          moveRectEx = abs(mouseX - rangedata[rangeNo].elX);
+          moveRectEy = abs(rangedata[rangeNo].elY - rangedata[rangeNo].efY);
+        } else if (movepoint == 6) {//右中央
+          moveRectx = rangedata[rangeNo].efX;
+          moveRecty = rangedata[rangeNo].efY;
+          moveRectEx = abs(mouseX - rangedata[rangeNo].efX);
+          moveRectEy = abs(rangedata[rangeNo].elY - rangedata[rangeNo].efY);
+        } else if (movepoint == 7) {//下中央
+          moveRectx = rangedata[rangeNo].efX;
+          moveRecty = rangedata[rangeNo].efY;
+          moveRectEx = abs(rangedata[rangeNo].elX - rangedata[rangeNo].efX);
+          moveRectEy = abs(mouseY - rangedata[rangeNo].efY);
+
+
+
+        } else {
+          moveRectx = rangedata[rangeNo].efX - movex;
+          moveRecty = rangedata[rangeNo].efY - movey;
+          moveRectEx = rangedata[rangeNo].elX - rangedata[rangeNo].efX;
+          moveRectEy = rangedata[rangeNo].elY - rangedata[rangeNo].efY;
+        }
+        if (abs(movex) > 3 || abs(movey) > 3) {
+          moveNow = true;
+        }
+      }
 
     }
-
   }
 }
 
@@ -1091,6 +1209,7 @@ function mouseReleased() {
     if ((mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930)) {
       efx = Efx;
       efy = Efy;
+
       if (mouseButton == LEFT && moveNow) {
         if (mode == 0) {
           efx = rangedata[rangeNo].efX - movex;
@@ -1103,11 +1222,20 @@ function mouseReleased() {
           elx = rangedata[rangeNo].elX;
           ely = rangedata[rangeNo].elY;
         }
+
+        if (movepoint >= 0) {
+          efx = moveRectx;
+          efy = moveRecty;
+          elx = moveRectx + moveRectEx;
+          ely = moveRecty + moveRectEy;
+        }
+
+
+
       } else {
         elx = mouseX;
         ely = mouseY;
       }
-
 
       //画像内で領域選択がされているか判定
       var exCenter = (elx + efx) / 2;
@@ -1119,10 +1247,6 @@ function mouseReleased() {
       var xsizeSum = (abs(elx - efx) + abs(imgEx - imgx)) / 2;
       var ysizeSum = (abs(ely - efy) + abs(imgEy - imgy)) / 2;
       if (xCenDist < xsizeSum && yCenDist < ysizeSum) {
-
-
-
-
         //選択範囲がウィンドウを越えた場合
         if (mode == 0) {
           if (elx >= imgEx) {
@@ -1199,6 +1323,7 @@ function mouseReleased() {
     y = -10;
     ax = -10;
     ay = -10;
+    movepoint = -1;
   }
 
 }
