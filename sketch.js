@@ -470,23 +470,45 @@ function draw() {
       if (areaMovement) {
         image(img0, imgx, imgy);
         if (rangeNo >= 0) {
-          upLex = rangedata[rangeNo].efX;
-          upLey = rangedata[rangeNo].efY;
-          upRix = rangedata[rangeNo].elX;
-          upRiy = rangedata[rangeNo].efY;
-          loLex = rangedata[rangeNo].efX;
-          loLey = rangedata[rangeNo].elY;
-          loRix = rangedata[rangeNo].elX;
-          loRiy = rangedata[rangeNo].elY;
+          if (rangedata[rangeNo].mode == 0) {
+            upLex = rangedata[rangeNo].efX;
+            upLey = rangedata[rangeNo].efY;
+            upRix = rangedata[rangeNo].elX;
+            upRiy = rangedata[rangeNo].efY;
+            loLex = rangedata[rangeNo].efX;
+            loLey = rangedata[rangeNo].elY;
+            loRix = rangedata[rangeNo].elX;
+            loRiy = rangedata[rangeNo].elY;
 
-          upMix = (rangedata[rangeNo].efX + rangedata[rangeNo].elX) / 2;
-          upMiy = rangedata[rangeNo].efY;
-          leMix = rangedata[rangeNo].efX;
-          leMiy = (rangedata[rangeNo].efY + rangedata[rangeNo].elY) / 2;
-          riMix = rangedata[rangeNo].elX;
-          riMiy = (rangedata[rangeNo].efY + rangedata[rangeNo].elY) / 2;
-          loMix = (rangedata[rangeNo].efX + rangedata[rangeNo].elX) / 2;
-          loMiy = rangedata[rangeNo].elY;
+            upMix = (rangedata[rangeNo].efX + rangedata[rangeNo].elX) / 2;
+            upMiy = rangedata[rangeNo].efY;
+            leMix = rangedata[rangeNo].efX;
+            leMiy = (rangedata[rangeNo].efY + rangedata[rangeNo].elY) / 2;
+            riMix = rangedata[rangeNo].elX;
+            riMiy = (rangedata[rangeNo].efY + rangedata[rangeNo].elY) / 2;
+            loMix = (rangedata[rangeNo].efX + rangedata[rangeNo].elX) / 2;
+            loMiy = rangedata[rangeNo].elY;
+
+          } else if (rangedata[rangeNo].mode == 1) {
+            upLex = rangedata[rangeNo].efX - rangedata[rangeNo].elX / 2;
+            upLey = rangedata[rangeNo].efY - rangedata[rangeNo].elY / 2;
+            upRix = rangedata[rangeNo].efX + rangedata[rangeNo].elX / 2;
+            upRiy = rangedata[rangeNo].efY - rangedata[rangeNo].elY / 2;
+            loLex = rangedata[rangeNo].efX - rangedata[rangeNo].elX / 2
+            loLey = rangedata[rangeNo].efY + rangedata[rangeNo].elY / 2;
+            loRix = rangedata[rangeNo].efX + rangedata[rangeNo].elX / 2;
+            loRiy = rangedata[rangeNo].efY + rangedata[rangeNo].elY / 2;
+
+            upMix = rangedata[rangeNo].efX;
+            upMiy = rangedata[rangeNo].efY - rangedata[rangeNo].elY / 2;
+            leMix = rangedata[rangeNo].efX - rangedata[rangeNo].elX / 2;
+            leMiy = rangedata[rangeNo].efY;
+            riMix = rangedata[rangeNo].efX + rangedata[rangeNo].elX / 2;
+            riMiy = rangedata[rangeNo].efY;
+            loMix = rangedata[rangeNo].efX;
+            loMiy = rangedata[rangeNo].efY + rangedata[rangeNo].elY / 2;
+
+          }
         }
       }
 
@@ -501,32 +523,32 @@ function draw() {
             } else {
               rect(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX - rangedata[r].efX, rangedata[r].elY - rangedata[r].efY);
             }
-            //拡大縮小用の端の丸
-            if (rangeNo >= 0 && !moveNow && areaMovement) {
-              var elSize = 10;
-              fill(255);
 
-              ellipse(rangedata[r].efX, rangedata[r].efY, elSize, elSize);
-              ellipse(rangedata[r].elX, rangedata[r].efY, elSize, elSize);
-              ellipse(rangedata[r].efX, rangedata[r].elY, elSize, elSize);
-              ellipse(rangedata[r].elX, rangedata[r].elY, elSize, elSize);
-
-              ellipse((rangedata[r].efX + rangedata[r].elX) / 2, rangedata[r].efY, elSize, elSize);
-              ellipse(rangedata[r].efX, (rangedata[r].efY + rangedata[r].elY) / 2, elSize, elSize);
-              ellipse(rangedata[r].elX, (rangedata[r].efY + rangedata[r].elY) / 2, elSize, elSize);
-              ellipse((rangedata[r].efX + rangedata[r].elX) / 2, rangedata[r].elY, elSize, elSize);
-
-
-            }
 
             //選択（円）の時
           } else if (rangedata[r].mode == 1) {
-            if (areaMovement && rangeNo == r && moveNow) {
-
-              ellipse(rangedata[r].efX - movex, rangedata[r].efY - movey, rangedata[r].elX, rangedata[r].elY);
+            if (areaMovement && moveNow) {
+              rect(moveRectx, moveRecty, moveRectEx, moveRectEy);
+              ellipse(moveRectx + moveRectEx / 2, moveRecty + moveRectEy / 2, moveRectEx, moveRectEy);
             } else {
+              rect(rangedata[r].efX - rangedata[r].elX / 2, rangedata[r].efY - rangedata[r].elY / 2, rangedata[r].elX, rangedata[r].elY);
               ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
             }
+          }
+
+          //拡大縮小用の端の丸
+          if (rangeNo >= 0 && !moveNow && areaMovement) {
+            var elSize = 10;
+            fill(255);
+            ellipse(upLex, upLey, elSize, elSize);
+            ellipse(upRix, upRiy, elSize, elSize);
+            ellipse(loLex, loLey, elSize, elSize);
+            ellipse(loRix, loRiy, elSize, elSize);
+
+            ellipse(upMix, upMiy, elSize, elSize);
+            ellipse(leMix, leMiy, elSize, elSize);
+            ellipse(riMix, riMiy, elSize, elSize);
+            ellipse(loMix, loMiy, elSize, elSize);
           }
         }
       }
@@ -801,25 +823,15 @@ function mousePressed() {
             rangeNo = l;
             beforeX = mouseX;
             beforeY = mouseY;
-
           }
-
-
 
         } else if (rangedata[l].mode == 1) {
-          var a, b;
-          if (rangedata[l].elX >= rangedata[l].elY) {
-            a = rangedata[l].elX;
-            b = rangedata[l].elY;
-          } else {
-            b = rangedata[l].elX;
-            a = rangedata[l].elY;
-          }
-          if (sq(mouseX - rangedata[l].efX) / sq((a / 2)) + sq(mouseY - rangedata[l].efY) / sq((b / 2)) <= 1) {
+
+          if (mouseX > rangedata[l].efX - rangedata[l].elX / 2 && mouseX < rangedata[l].efX + rangedata[l].elX / 2 &&
+            mouseY > rangedata[l].efY - rangedata[l].elY / 2 && mouseY < rangedata[l].efY + rangedata[l].elY / 2) {
             rangeNo = l;
             beforeX = mouseX;
             beforeY = mouseY;
-            moveNow = true;
 
           }
 
@@ -1144,60 +1156,57 @@ function mouseDragged() {
       movey = beforeY - mouseY;
       //領域指定
 
-      if (rangedata[rangeNo].mode == 0) {
-        if (movepoint == 0) {//左上
-          moveRectx = mouseX;
-          moveRecty = mouseY;
-          moveRectEx = abs(rangedata[rangeNo].elX - mouseX);
-          moveRectEy = abs(rangedata[rangeNo].elY - mouseY);
-        } else if (movepoint == 1) {//右上
-          moveRectx = rangedata[rangeNo].efX
-          moveRecty = mouseY;
-          moveRectEx = abs(mouseX - rangedata[rangeNo].efX);
-          moveRectEy = abs(mouseY - rangedata[rangeNo].elY);
-        } else if (movepoint == 2) {//左下
-          moveRectx = mouseX;
-          moveRecty = rangedata[rangeNo].efY;
-          moveRectEx = abs(mouseX - rangedata[rangeNo].elX);
-          moveRectEy = abs(mouseY - rangedata[rangeNo].efY);
-        } else if (movepoint == 3) {//右下
-          moveRectx = rangedata[rangeNo].efX;
-          moveRecty = rangedata[rangeNo].efY;
-          moveRectEx = abs(mouseX - rangedata[rangeNo].efX);
-          moveRectEy = abs(mouseY - rangedata[rangeNo].efY);
-        } else if (movepoint == 4) {//上中央
-          moveRectx = rangedata[rangeNo].efX;
-          moveRecty = mouseY;
-          moveRectEx = abs(rangedata[rangeNo].elX - rangedata[rangeNo].efX);
-          moveRectEy = abs(mouseY - rangedata[rangeNo].elY);
-        } else if (movepoint == 5) {//左中央
-          moveRectx = mouseX
-          moveRecty = rangedata[rangeNo].efY;
-          moveRectEx = abs(mouseX - rangedata[rangeNo].elX);
-          moveRectEy = abs(rangedata[rangeNo].elY - rangedata[rangeNo].efY);
-        } else if (movepoint == 6) {//右中央
-          moveRectx = rangedata[rangeNo].efX;
-          moveRecty = rangedata[rangeNo].efY;
-          moveRectEx = abs(mouseX - rangedata[rangeNo].efX);
-          moveRectEy = abs(rangedata[rangeNo].elY - rangedata[rangeNo].efY);
-        } else if (movepoint == 7) {//下中央
-          moveRectx = rangedata[rangeNo].efX;
-          moveRecty = rangedata[rangeNo].efY;
-          moveRectEx = abs(rangedata[rangeNo].elX - rangedata[rangeNo].efX);
-          moveRectEy = abs(mouseY - rangedata[rangeNo].efY);
+      if (movepoint == 0) {//左上
+        moveRectx = mouseX;
+        moveRecty = mouseY;
+        moveRectEx = abs(loRix - mouseX);
+        moveRectEy = abs(loRiy - mouseY);
+      } else if (movepoint == 1) {//右上
+        moveRectx = upLex;
+        moveRecty = mouseY;
+        moveRectEx = abs(mouseX - upLex);
+        moveRectEy = abs(mouseY - loRiy);
+      } else if (movepoint == 2) {//左下
+        moveRectx = mouseX;
+        moveRecty = upLey;
+        moveRectEx = abs(mouseX - loRix);
+        moveRectEy = abs(mouseY - upLey);
+      } else if (movepoint == 3) {//右下
+        moveRectx = upLex;
+        moveRecty = upLey;
+        moveRectEx = abs(mouseX - upLex);
+        moveRectEy = abs(mouseY - upLey);
+      } else if (movepoint == 4) {//上中央
+        moveRectx = upLex;
+        moveRecty = mouseY;
+        moveRectEx = abs(loRix - upLex);
+        moveRectEy = abs(mouseY - loRiy);
+      } else if (movepoint == 5) {//左中央
+        moveRectx = mouseX
+        moveRecty = upLey;
+        moveRectEx = abs(mouseX - loRix);
+        moveRectEy = abs(loRiy - upLey);
+      } else if (movepoint == 6) {//右中央
+        moveRectx = upLex;
+        moveRecty = upLey;
+        moveRectEx = abs(mouseX - upLex);
+        moveRectEy = abs(loRiy - upLey);
+      } else if (movepoint == 7) {//下中央
+        moveRectx = upLex;
+        moveRecty = upLey;
+        moveRectEx = abs(loRix - upLex);
+        moveRectEy = abs(mouseY - upLey);
 
-
-
-        } else {
-          moveRectx = rangedata[rangeNo].efX - movex;
-          moveRecty = rangedata[rangeNo].efY - movey;
-          moveRectEx = rangedata[rangeNo].elX - rangedata[rangeNo].efX;
-          moveRectEy = rangedata[rangeNo].elY - rangedata[rangeNo].efY;
-        }
-        if (abs(movex) > 3 || abs(movey) > 3) {
-          moveNow = true;
-        }
+      } else {
+        moveRectx = upLex - movex;
+        moveRecty = upLey - movey;
+        moveRectEx = loRix - upLex;
+        moveRectEy = loRiy - upLey;
       }
+      if (abs(movex) > 3 || abs(movey) > 3) {
+        moveNow = true;
+      }
+
 
     }
   }
@@ -1211,12 +1220,12 @@ function mouseReleased() {
       efy = Efy;
 
       if (mouseButton == LEFT && moveNow) {
-        if (mode == 0) {
+        if (rangedata[rangeNo].mode == 0) {
           efx = rangedata[rangeNo].efX - movex;
           efy = rangedata[rangeNo].efY - movey;
           elx = rangedata[rangeNo].elX - movex;
           ely = rangedata[rangeNo].elY - movey;
-        } else if (mode == 1) {
+        } else if (rangedata[rangeNo].mode == 1) {
           efx = rangedata[rangeNo].efX - movex;
           efy = rangedata[rangeNo].efY - movey;
           elx = rangedata[rangeNo].elX;
@@ -1224,10 +1233,18 @@ function mouseReleased() {
         }
 
         if (movepoint >= 0) {
-          efx = moveRectx;
-          efy = moveRecty;
-          elx = moveRectx + moveRectEx;
-          ely = moveRecty + moveRectEy;
+          if (rangedata[rangeNo].mode == 0) {
+            efx = moveRectx;
+            efy = moveRecty;
+            elx = moveRectx + moveRectEx;
+            ely = moveRecty + moveRectEy;
+          } else if (rangedata[rangeNo].mode == 1) {
+            efx = moveRectx + moveRectEx / 2;
+            efy = moveRecty + moveRectEy / 2;
+            elx = moveRectEx;
+            ely = moveRectEy;
+          }
+
         }
 
 
