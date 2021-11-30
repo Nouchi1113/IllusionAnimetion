@@ -1495,7 +1495,7 @@ function imageGeneration(wi, he) {
 
 function Export(wid, hei, exportStep) {
   if (exportStep == 0) {
-    diff = Math.round(1.12 / (25.4 / Number(document.getElementById("DPI").value)));
+    diff = Math.round(tan(radians(0.17)) * Number(document.getElementById("Dist").value) / (25.4 / Number(document.getElementById("DPI").value)));
     mp4 = true;
     allsteps = rangedata.length + 3 + rangedata.length + 1;
 
@@ -1521,6 +1521,8 @@ function Export(wid, hei, exportStep) {
     }
     input.hide();
     document.getElementById("number2").style.display = "none";
+    document.getElementById("DPI").style.display = "none";
+    document.getElementById("Dist").style.display = "none";
     document.getElementById("Twitter").style.display = "block";
 
     var sketch1 = function (p) {
@@ -1539,8 +1541,13 @@ function Export(wid, hei, exportStep) {
         var mapStep = map(ExportStep, 0, allsteps, 0, 400);
         p.rect(400, 375, mapStep, 50);
         p.fill(255);
-        p.text("出力中", 480, 300);
-        p.text("(" + ExportStep + "/" + allsteps + ")", 640, 300);
+        if (ExportStep < allsteps) {
+          p.text("画像出力中", 430, 300);
+        } else {
+          p.fill(0, 255, 0);
+          p.text("映像出力中", 430, 300);
+        }
+        p.text("(" + ExportStep + "/" + allsteps + ")", 690, 300);
       };
 
 
@@ -1557,6 +1564,7 @@ function Export(wid, hei, exportStep) {
     img3 = createImage(wid, hei);
 
     ExportStep++;
+    console.log(exportStep);
   } else if (2 <= exportStep && exportStep < rangedata.length + 2) {
     //rangedataを元の画像サイズ版にする
     if (wid != img.width) {
