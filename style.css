@@ -4,24 +4,26 @@ p {
   left: 800px;
 }
 
-#number2 {
-  position: absolute;
-  top: 25px;
-  left: 480px;
-  width: 50px;
-  height: 30px;
-}
 #DPI {
   position: absolute;
-  top: 140px;
-  left: 1035px;
-  width: 50px;
-  height: 30px;
+  top: 35px;
+  left: 460px;
+  width: 40px;
+  height: 20px;
 }
-#Edge {
+
+#Dist {
   position: absolute;
-  top: 140px;
-  left: 1115px;
+  top: 35px;
+  left: 530px;
+  width: 40px;
+  height: 20px;
+}
+
+#number2 {
+  position: absolute;
+  top: 120px;
+  left: 1040px;
   width: 50px;
   height: 30px;
 }

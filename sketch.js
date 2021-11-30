@@ -5,7 +5,7 @@ var rangedata = [];
 
 var PixelData = [];
 
-var img0, img1, img2, img3, img, Kotei, Jiyu, Sakujo, imgOriginal;
+var img0, img1, img2, img3, img, Kotei, Jiyu, Sakujo, imgOriginal, imgDisplay;
 
 var count = 0;
 
@@ -128,6 +128,13 @@ var moveRectx, moveRecty, moveRectEx, moveRectEy;
 
 //領域移動mode
 var movepoint;
+
+//前フレームのdiff
+var beforeDiff = diff;
+
+//ディスプレイまでの距離
+var displayDist = 400;
+
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -175,6 +182,7 @@ function imageLoaded() { //
   img1 = createImage(img.width, img.height);
   img2 = createImage(img.width, img.height);
   img3 = createImage(img.width, img.height);
+  imgDisplay = createImage(img.width, img.height);
   //始点
   imgx = width / 2 - img.width / 2;
   imgy = 430 - img.height / 2;
@@ -183,15 +191,15 @@ function imageLoaded() { //
   imgEx = imgx + img.width;
   imgEy = imgy + img.height;
 
-  img0.loadPixels();
+  imgDisplay.loadPixels();
 
   for (j = 0; j < img.height - diff; j++) {
     for (i = 0; i < img.width - diff; i++) {
       c = img.get(i, j);
-      img0.set(i, j, c);
+      imgDisplay.set(i, j, c);
     }
   }
-  img0.updatePixels();
+  imgDisplay.updatePixels();
 
   rangedata.length = 0;
   PixelData.length = 0;
@@ -216,13 +224,29 @@ function handleFile(file) {
 function draw() {
   framerate = Number(document.getElementById("number2").value);
   frameRate(framerate);
+  if (beforeDiff != diff) {
+    imgDisplay.loadPixels();
+
+    for (j = 0; j < img.height - diff; j++) {
+      for (i = 0; i < img.width - diff; i++) {
+        c = img.get(i, j);
+        imgDisplay.set(i, j, c);
+      }
+    }
+    imgDisplay.updatePixels();
+
+  }
+
+  beforeDiff = diff;
 
   //エッジ計算
   //document.getElementById("Edge").value = diff;
   //document.getElementById("DPI").value = Math.round(diff * 25.4 / 1.12);
   // diff = Number(document.getElementById("Edge").value);
+
   if (rangedata.length == 0) {
-    diff = Math.round(1.12 / (25.4 / Number(document.getElementById("DPI").value)));
+
+    diff = Math.round(tan(radians(0.17)) * Number(document.getElementById("Dist").value) / (25.4 / Number(document.getElementById("DPI").value)));
   }
   if (hozon) {
     if (ExportStep < allsteps) {
@@ -370,14 +394,10 @@ function draw() {
 
 
     fill(31, 30, 99);
-    text("錯視最適化", 1040, 95);
-
-    textSize(10);
-    text("DPI(ディスプレイ)", 1010, 125);
-    text("エッジサイズ", 1105, 125);
+    text("画像切り替え速度", 1015, 95);
 
     textSize(20);
-    text(diff, 1130, 160);
+    text("(fps)", 1100, 140);
 
     fill(31, 30, 99);
     text("選択範囲", 1055, 200);
@@ -410,11 +430,17 @@ function draw() {
     triangle(1180, 540, 1170, 520, 1190, 520);
     stroke(30, 31, 99);
     fill(255);
-    //画面上部
-    //切り替え速度
-    text("切替速度(fps):", 320, 45);
-    //動画出力関係
 
+    //画面上部
+    //錯視最適化
+    textSize(18);
+    text("エッジサイズ:" + diff + "(pixel)", 255, 45);
+    textSize(8);
+    text("DPI(ディスプレイ)", 440, 20);
+    text("距離(mm)", 525, 20);
+
+    //動画出力関係
+    textSize(20);
     text("動画出力:", 590, 45);
 
     text("低画質", 690, 45);
@@ -468,7 +494,8 @@ function draw() {
 
       //領域移動モード中は動きを止める
       if (areaMovement) {
-        image(img0, imgx, imgy);
+        vis = true;
+        image(imgDisplay, imgx, imgy);
         if (rangeNo >= 0) {
           if (rangedata[rangeNo].mode == 0) {
             upLex = rangedata[rangeNo].efX;
@@ -554,7 +581,7 @@ function draw() {
       }
 
     } else {
-      image(img0, imgx, imgy);
+      image(imgDisplay, imgx, imgy);
     }
     rangesize = rangedata.length;
 
@@ -1347,7 +1374,7 @@ function mouseReleased() {
 
 
 function keyPressed() {
-  if (key == "s") {
+  if (key == "v") {
     if (vis) {
       vis = false;
     } else {
