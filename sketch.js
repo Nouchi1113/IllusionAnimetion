@@ -82,7 +82,7 @@ var rfn = 0;
 var vis = true;
 
 //出力時のステップ段階
-var ExportStep = 0;
+var ExportStep = -1;
 var hozonWidth, hozonHeight;
 var gif = false;
 
@@ -245,12 +245,11 @@ function draw() {
   // diff = Number(document.getElementById("Edge").value);
 
   if (rangedata.length == 0) {
-
     diff = Math.round(tan(radians(0.17)) * Number(document.getElementById("Dist").value) / (25.4 / Number(document.getElementById("DPI").value)));
   }
   if (hozon) {
     if (ExportStep < allsteps) {
-
+      console.log(ExportStep);
       ExportStep++;
       Export(hozonWidth, hozonHeight, ExportStep);
 
@@ -1480,8 +1479,6 @@ function imageGeneration(wi, he) {
         }
       }
 
-
-
     }
     img0.updatePixels();
     img1.updatePixels();
@@ -1504,16 +1501,16 @@ function Export(wid, hei, exportStep) {
         format: Format,
         framerate: framerate,
         verbose: true,
-        name: 01,
+        name: "OutputMovie",
         timeLimit: 20
       });
       saveFrame = 92;
     } else {
-      console.log("gif");
+
       capturer = new CCapture({
         format: Format,
         framerate: framerate,
-        name: 01,
+        name: "OutputMovie",
         workersPath: './js/',
         verbose: true
       });
@@ -1543,10 +1540,18 @@ function Export(wid, hei, exportStep) {
         p.fill(255);
         if (ExportStep < allsteps) {
           p.text("画像出力中", 430, 300);
+          p.textSize(30);
+          p.text("（高画質の出力の場合，数分かかる可能性があります）", 250, 350);
         } else {
           p.fill(0, 255, 0);
+          p.textSize(50);
           p.text("映像出力中", 430, 300);
+          p.textSize(30);
+          p.text("（高画質の出力の場合，数分かかる可能性があります）", 250, 350);
+
+
         }
+        p.textSize(50);
         p.text("(" + ExportStep + "/" + allsteps + ")", 690, 300);
       };
 
@@ -1564,7 +1569,7 @@ function Export(wid, hei, exportStep) {
     img3 = createImage(wid, hei);
 
     ExportStep++;
-    console.log(exportStep);
+
   } else if (2 <= exportStep && exportStep < rangedata.length + 2) {
     //rangedataを元の画像サイズ版にする
     if (wid != img.width) {
@@ -1579,13 +1584,14 @@ function Export(wid, hei, exportStep) {
   } else if (exportStep >= rangedata.length + 2 && exportStep <= rangedata.length + 3 + rangedata.length) {
     imageGeneration(wid, hei);
 
+    if (exportStep == allsteps - 1) {
+      save(img0, "画像1.png");
+      save(img1, "画像2.png");
+      save(img2, "画像3.png");
+      save(img3, "画像4.png");
+      imgcount = 0;
+    }
 
-    //save(img0, "1.png");
-    //save(img1, "2.png");
-    //save(img2, "3.png");
-    //save(img3, "4.png");
-
-    imgcount = 0;
   }
 
 
