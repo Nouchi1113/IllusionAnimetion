@@ -135,6 +135,8 @@ var beforeDiff = diff;
 //ディスプレイまでの距離
 var displayDist = 400;
 
+var Freeze = false;
+
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -145,9 +147,11 @@ function preload() {
 }
 
 function setup() {
+
   frameRate(framerate);
   var p5Canvas = createCanvas(1200, 800);
   canvas = p5Canvas.canvas;
+
   textFont("Meiryo", 50);
 
   Kotei.resize(105, 50);
@@ -178,11 +182,13 @@ function imageLoaded() { //
   } else if (img.height >= 300) {
     img.resize(0, 300);
   }
+
   img0 = createImage(img.width, img.height);
   img1 = createImage(img.width, img.height);
   img2 = createImage(img.width, img.height);
   img3 = createImage(img.width, img.height);
   imgDisplay = createImage(img.width, img.height);
+
   //始点
   imgx = width / 2 - img.width / 2;
   imgy = 430 - img.height / 2;
@@ -222,6 +228,14 @@ function handleFile(file) {
 
 
 function draw() {
+  //挙動停止を止める
+  Freeze = false;
+
+  //var p = 0;
+  //console.log(p);
+  //console.log(p + 1);
+
+
   framerate = Number(document.getElementById("number2").value);
   frameRate(framerate);
   if (beforeDiff != diff) {
@@ -249,7 +263,7 @@ function draw() {
   }
   if (hozon) {
     if (ExportStep < allsteps) {
-      console.log(ExportStep);
+
       ExportStep++;
       Export(hozonWidth, hozonHeight, ExportStep);
 
@@ -556,8 +570,11 @@ function draw() {
             if (areaMovement && moveNow) {
               rect(moveRectx, moveRecty, moveRectEx, moveRectEy);
               ellipse(moveRectx + moveRectEx / 2, moveRecty + moveRectEy / 2, moveRectEx, moveRectEy);
-            } else {
+            } else if (areaMovement) {
               rect(rangedata[r].efX - rangedata[r].elX / 2, rangedata[r].efY - rangedata[r].elY / 2, rangedata[r].elX, rangedata[r].elY);
+              ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
+            } else {
+              //rect(rangedata[r].efX - rangedata[r].elX / 2, rangedata[r].efY - rangedata[r].elY / 2, rangedata[r].elX, rangedata[r].elY);
               ellipse(rangedata[r].efX, rangedata[r].efY, rangedata[r].elX, rangedata[r].elY);
             }
           }
@@ -837,317 +854,322 @@ function emboss(num, wi, he) {
 
 // ドラッグ開始
 function mousePressed() {
-  var moveJug = false;//一度でも範囲に入ったかどうか
-  var moveJugNum = -1;//入ったNoを書いておいて一番上層のNoを最後参照して動かす
-  if (mouseButton == LEFT) {
-    //領域移動
-    if (areaMovement) {
-      for (l = 0; l < rangedata.length; l++) {
-        //領域指定
-        if (rangedata[l].mode == 0) {
-          if (mouseX > rangedata[l].efX && mouseX < rangedata[l].elX && mouseY > rangedata[l].efY && mouseY < rangedata[l].elY) {
-            rangeNo = l;
-            beforeX = mouseX;
-            beforeY = mouseY;
-          }
-
-        } else if (rangedata[l].mode == 1) {
-
-          if (mouseX > rangedata[l].efX - rangedata[l].elX / 2 && mouseX < rangedata[l].efX + rangedata[l].elX / 2 &&
-            mouseY > rangedata[l].efY - rangedata[l].elY / 2 && mouseY < rangedata[l].efY + rangedata[l].elY / 2) {
-            rangeNo = l;
-            beforeX = mouseX;
-            beforeY = mouseY;
-
-          }
-
-
-        }
-      }
-      if (sqrt(sq(mouseX - upLex) + sq(mouseY - upLey)) < 10) {//左上
-        movepoint = 0;
-      } else if (sqrt(sq(mouseX - upRix) + sq(mouseY - upRiy)) < 10) {//右上
-        movepoint = 1;
-      } else if (sqrt(sq(mouseX - loLex) + sq(mouseY - loLey)) < 10) {//左下
-        movepoint = 2;
-      } else if (sqrt(sq(mouseX - loRix) + sq(mouseY - loRiy)) < 10) {//右下
-        movepoint = 3;
-      } else if (sqrt(sq(mouseX - upMix) + sq(mouseY - upMiy)) < 10) {//上中央
-        movepoint = 4;
-      } else if (sqrt(sq(mouseX - leMix) + sq(mouseY - leMiy)) < 10) {//左中央
-        movepoint = 5;
-      } else if (sqrt(sq(mouseX - riMix) + sq(mouseY - riMiy)) < 10) {//右中央
-        movepoint = 6;
-      } else if (sqrt(sq(mouseX - loMix) + sq(mouseY - loMiy)) < 10) {//下中央
-        movepoint = 7;
-      }
-
-    } else {
-      if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
-
-        var partclick = false;
-        for (k = rangedata.length - 1; k >= 0; k--) {
-
-          //既に指定された部分の動き方向を変える場合
-
-          //四角の場合
-
-          if (rangedata[k].mode == 0) {
-            if (mouseX > rangedata[k].efX && mouseX < rangedata[k].elX && mouseY > rangedata[k].efY && mouseY < rangedata[k].elY && !(rangedata[k].efX == imgx && rangedata[k].elX == imgEx && rangedata[k].efY == imgy && rangedata[k].elY == imgEy) && moveJug == false) {
-              moveJug = true;
-              efx = rangedata[k].efX;
-              efy = rangedata[k].efY;
-              elx = rangedata[k].elX;
-              ely = rangedata[k].elY;
-              Speed(efx, efy, elx, ely, rangedata[k].mode);
-              rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0, Movemode));
-              PixelData.splice(k, 1);
-              emboss(k, img.width, img.height);
-              partclick = true;
+  if (!Freeze) {
+    var moveJug = false;//一度でも範囲に入ったかどうか
+    var moveJugNum = -1;//入ったNoを書いておいて一番上層のNoを最後参照して動かす
+    if (mouseButton == LEFT) {
+      //領域移動
+      if (areaMovement) {
+        for (l = 0; l < rangedata.length; l++) {
+          //領域指定
+          if (rangedata[l].mode == 0) {
+            if (mouseX > rangedata[l].efX && mouseX < rangedata[l].elX && mouseY > rangedata[l].efY && mouseY < rangedata[l].elY) {
+              rangeNo = l;
+              beforeX = mouseX;
+              beforeY = mouseY;
             }
 
-          } else if (rangedata[k].mode == 1) {  //円の場合 
-            var a, b;
-            if (rangedata[k].elX >= rangedata[k].elY) {
-              a = rangedata[k].elX;
-              b = rangedata[k].elY;
+          } else if (rangedata[l].mode == 1) {
+
+            if (mouseX > rangedata[l].efX - rangedata[l].elX / 2 && mouseX < rangedata[l].efX + rangedata[l].elX / 2 &&
+              mouseY > rangedata[l].efY - rangedata[l].elY / 2 && mouseY < rangedata[l].efY + rangedata[l].elY / 2) {
+              rangeNo = l;
+              beforeX = mouseX;
+              beforeY = mouseY;
+
+            }
+
+
+          }
+        }
+        if (sqrt(sq(mouseX - upLex) + sq(mouseY - upLey)) < 10) {//左上
+          movepoint = 0;
+        } else if (sqrt(sq(mouseX - upRix) + sq(mouseY - upRiy)) < 10) {//右上
+          movepoint = 1;
+        } else if (sqrt(sq(mouseX - loLex) + sq(mouseY - loLey)) < 10) {//左下
+          movepoint = 2;
+        } else if (sqrt(sq(mouseX - loRix) + sq(mouseY - loRiy)) < 10) {//右下
+          movepoint = 3;
+        } else if (sqrt(sq(mouseX - upMix) + sq(mouseY - upMiy)) < 10) {//上中央
+          movepoint = 4;
+        } else if (sqrt(sq(mouseX - leMix) + sq(mouseY - leMiy)) < 10) {//左中央
+          movepoint = 5;
+        } else if (sqrt(sq(mouseX - riMix) + sq(mouseY - riMiy)) < 10) {//右中央
+          movepoint = 6;
+        } else if (sqrt(sq(mouseX - loMix) + sq(mouseY - loMiy)) < 10) {//下中央
+          movepoint = 7;
+        }
+
+      } else {
+        if (mouseX >= imgx && mouseX <= imgEx && mouseY >= imgy && mouseY <= imgEy) {
+
+          var partclick = false;
+          for (k = rangedata.length - 1; k >= 0; k--) {
+
+            //既に指定された部分の動き方向を変える場合
+
+            //四角の場合
+
+            if (rangedata[k].mode == 0) {
+              if (mouseX > rangedata[k].efX && mouseX < rangedata[k].elX && mouseY > rangedata[k].efY && mouseY < rangedata[k].elY && !(rangedata[k].efX == imgx && rangedata[k].elX == imgEx && rangedata[k].efY == imgy && rangedata[k].elY == imgEy) && moveJug == false) {
+                moveJug = true;
+                efx = rangedata[k].efX;
+                efy = rangedata[k].efY;
+                elx = rangedata[k].elX;
+                ely = rangedata[k].elY;
+                Speed(efx, efy, elx, ely, rangedata[k].mode);
+                rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0, Movemode));
+                PixelData.splice(k, 1);
+                emboss(k, img.width, img.height);
+                partclick = true;
+              }
+
+            } else if (rangedata[k].mode == 1) {  //円の場合 
+              var a, b;
+              if (rangedata[k].elX >= rangedata[k].elY) {
+                a = rangedata[k].elX;
+                b = rangedata[k].elY;
+              } else {
+                b = rangedata[k].elX;
+                a = rangedata[k].elY;
+              }
+
+              if (sq(mouseX - rangedata[k].efX) / sq((a / 2)) + sq(mouseY - rangedata[k].efY) / sq((b / 2)) <= 1 && moveJug == false) {
+                moveJug = true;
+                efx = rangedata[k].efX;
+                efy = rangedata[k].efY;
+                elx = rangedata[k].elX;
+                ely = rangedata[k].elY;
+                Speed(efx, efy, elx, ely, rangedata[k].mode);
+                rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 1, 0, Movemode));
+                PixelData.splice(k, 1);
+
+                emboss(k, img.width, img.height);
+                partclick = true;
+              }
+            }
+
+
+          }
+
+          //全画面選択
+          if (!partclick) {
+            efx = imgx;
+            efy = imgy;
+            elx = imgEx;
+            ely = imgEy;
+
+            speed = Speed(efx, efy, elx, ely, 0);
+
+            rangedata.splice(0, 0, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0, Movemode));
+
+
+            if (allpart && rangedata.length >= 2) {
+              rangedata.splice(1, 1);
+            }
+            if (allpart && PixelData.length >= 1) {
+              PixelData.length = 0;
+            }
+
+
+
+
+            for (k = 0; k < rangedata.length; k++) {
+              emboss(k, img.width, img.height);
+            }
+            if (allpart) {
+              rangeImage.splice(0, 1, createImage(elx - efx, ely - efy));
             } else {
-              b = rangedata[k].elX;
-              a = rangedata[k].elY;
+              rangeImage.splice(0, 0, createImage(elx - efx, ely - efy));
             }
+            rangeImage[0] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
 
-            if (sq(mouseX - rangedata[k].efX) / sq((a / 2)) + sq(mouseY - rangedata[k].efY) / sq((b / 2)) <= 1 && moveJug == false) {
-              moveJug = true;
-              efx = rangedata[k].efX;
-              efy = rangedata[k].efY;
-              elx = rangedata[k].elX;
-              ely = rangedata[k].elY;
-              Speed(efx, efy, elx, ely, rangedata[k].mode);
-              rangedata.splice(k, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 1, 0, Movemode));
-              PixelData.splice(k, 1);
+            if (rangeImage[0].width > 150) {
+              rangeImage[0].resize(150, 0);
+            }
+            allpart = true;//一度でも全画面選択が使用されたか
+          }
 
-              emboss(k, img.width, img.height);
+          framemodespeed = int(speed);
+          imageGeneration(img.width, img.height);
+        }
+
+        //右メニューバーからエンボスさせる
+        let rry = 220;
+        for (e = rfn; e < rangedata.length; e++) {
+          if (rangedata[e].mode == 0) {
+
+            if ((mouseX > 1095 - rangeImage[e].width / 2 && mouseX < 1095 + rangeImage[e].width / 2 && rry < mouseY && mouseY < rry + rangeImage[e].height) && !areaMovement) {
+
+              efx = rangedata[e].efX;
+              efy = rangedata[e].efY;
+              elx = rangedata[e].elX;
+              ely = rangedata[e].elY;
+              Speed(efx, efy, elx, ely, rangedata[e].mode);
+
+              //右メニューでの画像と本画像のクリック位置を合わせる
+
+              let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, rangedata[e].efX, rangedata[e].elX);
+              let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, rangedata[e].efY, rangedata[e].elY);
+
+              rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 0, 0, Movemode));
+              PixelData.splice(e, 1);
+              emboss(e, img.width, img.height);
               partclick = true;
+              imageGeneration(img.width, img.height);
+            }
+
+          } else if (rangedata[e].mode == 1) {  //円の場合 
+            var a, b;
+            if (rangedata[e].elX >= rangedata[e].elY) {
+              a = rangedata[e].elX;
+              b = rangedata[e].elY;
+            } else {
+              b = rangedata[e].elX;
+              a = rangedata[e].elY;
+            }
+
+            if ((mouseX > 1095 - rangeImage[e].width / 2 && mouseX < 1095 + rangeImage[e].width / 2 && rry < mouseY && mouseY < rry + rangeImage[e].height)) {
+              moveJug = true;
+              efx = rangedata[e].efX;
+              efy = rangedata[e].efY;
+              elx = rangedata[e].elX;
+              ely = rangedata[e].elY;
+              Speed(efx, efy, elx, ely, rangedata[e].mode);
+              let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, imgx, imgEx);
+              let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
+              rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 1, 0, Movemode));
+              PixelData.splice(e, 1);
+
+              emboss(e, img.width, img.height);
+              partclick = true;
+              imageGeneration(img.width, img.height);
+
             }
           }
-
+          rry = rry + rangeImage[e].height + 20;
+          framemodespeed = int(speed);
 
         }
+        //右メニューの画像の表示切り替え
+        if (mouseX > 1170 && mouseX < 1190 && mouseY > 300 && mouseY < 320 && rfn > 0) {
+          rfn--;
 
-        //全画面選択
-        if (!partclick) {
-          efx = imgx;
-          efy = imgy;
-          elx = imgEx;
-          ely = imgEy;
-
-          speed = Speed(efx, efy, elx, ely, 0);
-
-          rangedata.splice(0, 0, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, 0, 0, Movemode));
+        } else if (mouseX > 1170 && mouseX < 1190 && mouseY > 520 && mouseY < 540 && rfn < rangedata.length - 1) {
+          rfn++;
+        }
 
 
-          if (allpart && rangedata.length >= 2) {
-            rangedata.splice(1, 1);
-          }
-          if (allpart && PixelData.length >= 1) {
-            PixelData.length = 0;
-          }
+      }
+    }
+    //指定ドラッグスタート座標
+    if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930 && !areaMovement) {
 
 
-          allpart = true;//一度でも全画面選択が使用されたか
+      if (mouseButton == RIGHT) {
+        Efx = mouseX;
+        Efy = mouseY;
 
-          for (k = 0; k < rangedata.length; k++) {
-            emboss(k, img.width, img.height);
-          }
-          rangeImage.splice(0, 0, createImage(elx - efx, ely - efy));
-          rangeImage[0] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
+        if (mode == 0 || mode == 1) {
+          x = Efx;
+          y = Efy;
+        }
+      }
+    }
 
-          if (rangeImage[0].width > 150) {
-            rangeImage[0].resize(150, 0);
+    //メニューバー
+    if (mouseButton == LEFT) {
+      //領域選択
+      if (mouseX > 40 && mouseX < 170 && mouseY > 120 && mouseY < 180) {
+        mode = 0;
+      } else if (mouseX > 40 && mouseX < 170 && mouseY > 195 && mouseY < 255) {
+        mode = 1;
+      }
+      //領域移動 rect(40, 290, 130, 45);
+      if (mouseX > 40 && mouseX < 170 && mouseY > 290 && mouseY < 335 && rangedata.length > 0) {
+        areaMovement = true;
+        Movemode = -1;
+      }
+
+
+      //運動方法
+      if (mouseX > 30 && mouseX < 105 && mouseY > 400 && mouseY < 460) {
+        Movemode = 0;
+        areaMovement = false;
+      } else if (mouseX > 105 && mouseX < 180 && mouseY > 400 && mouseY < 460) {
+        Movemode = 1;
+        areaMovement = false;
+      } else if (mouseX > 30 && mouseX < 105 && mouseY > 480 && mouseY < 540) {
+        Movemode = 2;
+        areaMovement = false;
+      } else if (mouseX > 105 && mouseX < 180 && mouseY > 480 && mouseY < 540) {
+        Movemode = 3;
+        areaMovement = false;
+      } else if (mouseX > 30 && mouseX < 105 && mouseY > 560 && mouseY < 620) {
+        Movemode = 4;
+        areaMovement = false;
+      }
+
+
+      //領域削除
+      if (mouseX > 70 && mouseX < 140 && mouseY > 660 && mouseY < 770) {
+        for (i = 0; i < rangedata.length; i++) {
+          if (efx == rangedata[i].efX) {
+            if (rangedata[i].efX == imgx && rangedata[i].elX == imgEx && rangedata[i].efY == imgy && rangedata[i].elY == imgEy) {
+              allpart = false;
+            }
+            rangedata.splice(i, 1);
+            rangeImage.splice(i, 1);
+
           }
         }
 
-        framemodespeed = int(speed);
+        for (k = 0; k < rangedata.length; k++) {
+          emboss(k, img.width, img.height);
+        }
         imageGeneration(img.width, img.height);
       }
 
-      //右メニューバーからエンボスさせる
-      let rry = 220;
-      for (e = rfn; e < rangedata.length; e++) {
-        if (rangedata[e].mode == 0) {
+      //動画出力
+      //GIF　rect(1013, 15, 60, 40, 5);  
+      if (rangedata.length > 0) {
 
-          if ((mouseX > 1095 - rangeImage[e].width / 2 && mouseX < 1095 + rangeImage[e].width / 2 && rry < mouseY && mouseY < rry + rangeImage[e].height)) {
+        if (mouseX > 763 && mouseX < 823 && mouseY > 0 && mouseY < 60 && po == 0) {
+          hozonWidth = img.width;
+          hozonHeight = img.height;
+          Format = 'gif'
+          Export(img.width, img.height, 0);
 
-            efx = rangedata[e].efX;
-            efy = rangedata[e].efY;
-            elx = rangedata[e].elX;
-            ely = rangedata[e].elY;
-            Speed(efx, efy, elx, ely, rangedata[e].mode);
 
-            //右メニューでの画像と本画像のクリック位置を合わせる
 
-            let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, rangedata[e].efX, rangedata[e].elX);
-            let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, rangedata[e].efY, rangedata[e].elY);
-
-            rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 0, 0, Movemode));
-            PixelData.splice(e, 1);
-            emboss(e, img.width, img.height);
-            partclick = true;
-            imageGeneration(img.width, img.height);
-          }
-
-        } else if (rangedata[e].mode == 1) {  //円の場合 
-          var a, b;
-          if (rangedata[e].elX >= rangedata[e].elY) {
-            a = rangedata[e].elX;
-            b = rangedata[e].elY;
-          } else {
-            b = rangedata[e].elX;
-            a = rangedata[e].elY;
-          }
-
-          if ((mouseX > 1095 - rangeImage[e].width / 2 && mouseX < 1095 + rangeImage[e].width / 2 && rry < mouseY && mouseY < rry + rangeImage[e].height)) {
-            moveJug = true;
-            efx = rangedata[e].efX;
-            efy = rangedata[e].efY;
-            elx = rangedata[e].elX;
-            ely = rangedata[e].elY;
-            Speed(efx, efy, elx, ely, rangedata[e].mode);
-            let mousexr = map(mouseX, 1095 - rangeImage[e].width / 2, 1095 + rangeImage[e].width / 2, imgx, imgEx);
-            let mouseyr = map(mouseY, rry, rry + rangeImage[e].height, imgy, imgEy);
-            rangedata.splice(e, 1, new RangeData(efx, efy, elx, ely, mousexr, mouseyr, speed, 1, 0, Movemode));
-            PixelData.splice(e, 1);
-
-            emboss(e, img.width, img.height);
-            partclick = true;
-            imageGeneration(img.width, img.height);
-
-          }
         }
-        rry = rry + rangeImage[e].height + 20;
-        framemodespeed = int(speed);
 
-      }
-      //右メニューの画像の表示切り替え
-      if (mouseX > 1170 && mouseX < 1190 && mouseY > 300 && mouseY < 320 && rfn > 0) {
-        rfn--;
+        //WEBM rect(1090, 15, 80, 40, 5);
+        if (mouseX > 840 && mouseX < 920 && mouseY > 0 && mouseY < 60 && po == 0) {
+          hozonWidth = img.width;
+          hozonHeight = img.height;
+          Format = 'webm';
+          Export(img.width, img.height, 0);
 
-      } else if (mouseX > 1170 && mouseX < 1190 && mouseY > 520 && mouseY < 540 && rfn < rangedata.length - 1) {
-        rfn++;
-      }
+        }
 
+        if (mouseX > 1013 && mouseX < 1073 && mouseY > 0 && mouseY < 60 && po == 0) {
+          hozonWidth = originalWidth;
+          hozonHeight = originalheight;
+          Format = 'gif';
+          Export(originalWidth, originalheight, 0);
+        }
 
-    }
-  }
-  //指定ドラッグスタート座標
-  if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930 && !areaMovement) {
-
-
-    if (mouseButton == RIGHT) {
-      Efx = mouseX;
-      Efy = mouseY;
-
-      if (mode == 0 || mode == 1) {
-        x = Efx;
-        y = Efy;
-      }
-    }
-  }
-
-  //メニューバー
-  if (mouseButton == LEFT) {
-    //領域選択
-    if (mouseX > 40 && mouseX < 170 && mouseY > 120 && mouseY < 180) {
-      mode = 0;
-    } else if (mouseX > 40 && mouseX < 170 && mouseY > 195 && mouseY < 255) {
-      mode = 1;
-    }
-    //領域移動 rect(40, 290, 130, 45);
-    if (mouseX > 40 && mouseX < 170 && mouseY > 290 && mouseY < 335 && rangedata.length > 0) {
-      areaMovement = true;
-      Movemode = -1;
-    }
-
-
-    //運動方法
-    if (mouseX > 30 && mouseX < 105 && mouseY > 400 && mouseY < 460) {
-      Movemode = 0;
-      areaMovement = false;
-    } else if (mouseX > 105 && mouseX < 180 && mouseY > 400 && mouseY < 460) {
-      Movemode = 1;
-      areaMovement = false;
-    } else if (mouseX > 30 && mouseX < 105 && mouseY > 480 && mouseY < 540) {
-      Movemode = 2;
-      areaMovement = false;
-    } else if (mouseX > 105 && mouseX < 180 && mouseY > 480 && mouseY < 540) {
-      Movemode = 3;
-      areaMovement = false;
-    } else if (mouseX > 30 && mouseX < 105 && mouseY > 560 && mouseY < 620) {
-      Movemode = 4;
-      areaMovement = false;
-    }
-
-
-    //領域削除
-    if (mouseX > 70 && mouseX < 140 && mouseY > 700 && mouseY < 770) {
-      for (i = 0; i < rangedata.length; i++) {
-        if (efx == rangedata[i].efX) {
-          if (rangedata[i].efX == imgx && rangedata[i].elX == imgEx && rangedata[i].efY == imgy && rangedata[i].elY == imgEy) {
-            allpart = false;
-          }
-          rangedata.splice(i, 1);
-          rangeImage.splice(i, 1);
-
+        //WEBM rect(1090, 15, 80, 40, 5);
+        if (mouseX > 1090 && mouseX < 1170 && mouseY > 0 && mouseY < 60 && po == 0) {
+          hozonWidth = originalWidth;
+          hozonHeight = originalheight;
+          Format = 'webm';
+          Export(originalWidth, originalheight, 0);
         }
       }
 
-      for (k = 0; k < rangedata.length; k++) {
-        emboss(k, img.width, img.height);
-      }
-      imageGeneration(img.width, img.height);
     }
-
-    //動画出力
-    //GIF　rect(1013, 15, 60, 40, 5);  
-    if (rangedata.length > 0) {
-
-      if (mouseX > 763 && mouseX < 823 && mouseY > 0 && mouseY < 60 && po == 0) {
-        hozonWidth = img.width;
-        hozonHeight = img.height;
-        Format = 'gif'
-        Export(img.width, img.height, 0);
-        //gif = true;
-
-
-      }
-
-      //WEBM rect(1090, 15, 80, 40, 5);
-      if (mouseX > 840 && mouseX < 920 && mouseY > 0 && mouseY < 60 && po == 0) {
-        hozonWidth = img.width;
-        hozonHeight = img.height;
-        Format = 'webm';
-        Export(img.width, img.height, 0);
-
-      }
-
-      if (mouseX > 1013 && mouseX < 1073 && mouseY > 0 && mouseY < 60 && po == 0) {
-        hozonWidth = originalWidth;
-        hozonHeight = originalheight;
-        Format = 'gif';
-        Export(originalWidth, originalheight, 0);
-
-        //gif = true;
-      }
-
-      //WEBM rect(1090, 15, 80, 40, 5);
-      if (mouseX > 1090 && mouseX < 1170 && mouseY > 0 && mouseY < 60 && po == 0) {
-        hozonWidth = originalWidth;
-        hozonHeight = originalheight;
-        Format = 'webm';
-        Export(originalWidth, originalheight, 0);
-      }
-    }
-
   }
 }
 
@@ -1156,219 +1178,237 @@ function mousePressed() {
 
 // ドラッグ中にマウスの場所が四角の終点になる
 function mouseDragged() {
-  if (mouseButton == RIGHT && !areaMovement) {
-    if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
+  if (!Freeze) {
+    if (mouseButton == RIGHT && !areaMovement) {
+      if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
 
-      if (mode == 0) {
-        ax = mouseX - x;
-        ay = mouseY - y;
-      } else if (mode == 1) {
-        x = (mouseX + Efx) / 2;
-        y = (mouseY + Efy) / 2;
-        ax = mouseX - Efx;
-        ay = mouseY - Efy;
-        if ((keyPressed == true) && (keyCode == CONTROL)) {
-          var a = dist(x, y, mouseX, mouseY);
-          ax = int(a * 2);
-          ay = int(a * 2);
+        if (mode == 0) {
+          ax = mouseX - x;
+          ay = mouseY - y;
+        } else if (mode == 1) {
+          x = (mouseX + Efx) / 2;
+          y = (mouseY + Efy) / 2;
+          ax = mouseX - Efx;
+          ay = mouseY - Efy;
+          if ((keyPressed == true) && (keyCode == CONTROL)) {
+            var a = dist(x, y, mouseX, mouseY);
+            ax = int(a * 2);
+            ay = int(a * 2);
+          }
         }
       }
-    }
-  } else {//mousePressed==Left
+    } else {//mousePressed==Left
 
-    //領域移動
-    if (areaMovement) {
-      movex = beforeX - mouseX;
-      movey = beforeY - mouseY;
-      //領域指定
+      //領域移動
+      if (areaMovement) {
+        movex = beforeX - mouseX;
+        movey = beforeY - mouseY;
+        //領域指定
 
-      if (movepoint == 0) {//左上
-        moveRectx = mouseX;
-        moveRecty = mouseY;
-        moveRectEx = abs(loRix - mouseX);
-        moveRectEy = abs(loRiy - mouseY);
-      } else if (movepoint == 1) {//右上
-        moveRectx = upLex;
-        moveRecty = mouseY;
-        moveRectEx = abs(mouseX - upLex);
-        moveRectEy = abs(mouseY - loRiy);
-      } else if (movepoint == 2) {//左下
-        moveRectx = mouseX;
-        moveRecty = upLey;
-        moveRectEx = abs(mouseX - loRix);
-        moveRectEy = abs(mouseY - upLey);
-      } else if (movepoint == 3) {//右下
-        moveRectx = upLex;
-        moveRecty = upLey;
-        moveRectEx = abs(mouseX - upLex);
-        moveRectEy = abs(mouseY - upLey);
-      } else if (movepoint == 4) {//上中央
-        moveRectx = upLex;
-        moveRecty = mouseY;
-        moveRectEx = abs(loRix - upLex);
-        moveRectEy = abs(mouseY - loRiy);
-      } else if (movepoint == 5) {//左中央
-        moveRectx = mouseX
-        moveRecty = upLey;
-        moveRectEx = abs(mouseX - loRix);
-        moveRectEy = abs(loRiy - upLey);
-      } else if (movepoint == 6) {//右中央
-        moveRectx = upLex;
-        moveRecty = upLey;
-        moveRectEx = abs(mouseX - upLex);
-        moveRectEy = abs(loRiy - upLey);
-      } else if (movepoint == 7) {//下中央
-        moveRectx = upLex;
-        moveRecty = upLey;
-        moveRectEx = abs(loRix - upLex);
-        moveRectEy = abs(mouseY - upLey);
+        if (movepoint == 0) {//左上
+          moveRectx = mouseX;
+          moveRecty = mouseY;
+          moveRectEx = abs(loRix - mouseX);
+          moveRectEy = abs(loRiy - mouseY);
+        } else if (movepoint == 1) {//右上
+          moveRectx = upLex;
+          moveRecty = mouseY;
+          moveRectEx = abs(mouseX - upLex);
+          moveRectEy = abs(mouseY - loRiy);
+        } else if (movepoint == 2) {//左下
+          moveRectx = mouseX;
+          moveRecty = upLey;
+          moveRectEx = abs(mouseX - loRix);
+          moveRectEy = abs(mouseY - upLey);
+        } else if (movepoint == 3) {//右下
+          moveRectx = upLex;
+          moveRecty = upLey;
+          moveRectEx = abs(mouseX - upLex);
+          moveRectEy = abs(mouseY - upLey);
+        } else if (movepoint == 4) {//上中央
+          moveRectx = upLex;
+          moveRecty = mouseY;
+          moveRectEx = abs(loRix - upLex);
+          moveRectEy = abs(mouseY - loRiy);
+        } else if (movepoint == 5) {//左中央
+          moveRectx = mouseX
+          moveRecty = upLey;
+          moveRectEx = abs(mouseX - loRix);
+          moveRectEy = abs(loRiy - upLey);
+        } else if (movepoint == 6) {//右中央
+          moveRectx = upLex;
+          moveRecty = upLey;
+          moveRectEx = abs(mouseX - upLex);
+          moveRectEy = abs(loRiy - upLey);
+        } else if (movepoint == 7) {//下中央
+          moveRectx = upLex;
+          moveRecty = upLey;
+          moveRectEx = abs(loRix - upLex);
+          moveRectEy = abs(mouseY - upLey);
 
-      } else {
-        moveRectx = upLex - movex;
-        moveRecty = upLey - movey;
-        moveRectEx = loRix - upLex;
-        moveRectEy = loRiy - upLey;
+        } else {
+          moveRectx = upLex - movex;
+          moveRecty = upLey - movey;
+          moveRectEx = loRix - upLex;
+          moveRectEy = loRiy - upLey;
+        }
+        if (abs(movex) > 3 || abs(movey) > 3) {
+          moveNow = true;
+        }
+
+
       }
-      if (abs(movex) > 3 || abs(movey) > 3) {
-        moveNow = true;
-      }
-
-
     }
   }
 }
 
 // ドラッグ終了時に四角が消えて指定した部分が動く
 function mouseReleased() {
-  if (mouseButton == RIGHT && !areaMovement || (mouseButton == LEFT && moveNow)) {
-    if ((mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930)) {
-      efx = Efx;
-      efy = Efy;
+  if (!Freeze) {
+    if (mouseButton == RIGHT && !areaMovement || (mouseButton == LEFT && moveNow)) {
+      if ((mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930)) {
+        efx = Efx;
+        efy = Efy;
 
-      if (mouseButton == LEFT && moveNow) {
-        if (rangedata[rangeNo].mode == 0) {
-          efx = rangedata[rangeNo].efX - movex;
-          efy = rangedata[rangeNo].efY - movey;
-          elx = rangedata[rangeNo].elX - movex;
-          ely = rangedata[rangeNo].elY - movey;
-        } else if (rangedata[rangeNo].mode == 1) {
-          efx = rangedata[rangeNo].efX - movex;
-          efy = rangedata[rangeNo].efY - movey;
-          elx = rangedata[rangeNo].elX;
-          ely = rangedata[rangeNo].elY;
-        }
-
-        if (movepoint >= 0) {
+        if (mouseButton == LEFT && moveNow) {
           if (rangedata[rangeNo].mode == 0) {
-            efx = moveRectx;
-            efy = moveRecty;
-            elx = moveRectx + moveRectEx;
-            ely = moveRecty + moveRectEy;
+            efx = rangedata[rangeNo].efX - movex;
+            efy = rangedata[rangeNo].efY - movey;
+            elx = rangedata[rangeNo].elX - movex;
+            ely = rangedata[rangeNo].elY - movey;
           } else if (rangedata[rangeNo].mode == 1) {
-            efx = moveRectx + moveRectEx / 2;
-            efy = moveRecty + moveRectEy / 2;
-            elx = moveRectEx;
-            ely = moveRectEy;
+            efx = rangedata[rangeNo].efX - movex;
+            efy = rangedata[rangeNo].efY - movey;
+            elx = rangedata[rangeNo].elX;
+            ely = rangedata[rangeNo].elY;
           }
 
-        }
+          if (movepoint >= 0) {
+            if (rangedata[rangeNo].mode == 0) {
+              efx = moveRectx;
+              efy = moveRecty;
+              elx = moveRectx + moveRectEx;
+              ely = moveRecty + moveRectEy;
+            } else if (rangedata[rangeNo].mode == 1) {
+              efx = moveRectx + moveRectEx / 2;
+              efy = moveRecty + moveRectEy / 2;
+              elx = moveRectEx;
+              ely = moveRectEy;
+            }
 
-
-
-      } else {
-        elx = mouseX;
-        ely = mouseY;
-      }
-
-      //画像内で領域選択がされているか判定
-      var exCenter = (elx + efx) / 2;
-      var eyCenter = (ely + efy) / 2;
-      var imxCenter = (imgx + imgEx) / 2;
-      var imyCenter = (imgy + imgEy) / 2;
-      var xCenDist = abs(exCenter - imxCenter);
-      var yCenDist = abs(eyCenter - imyCenter);
-      var xsizeSum = (abs(elx - efx) + abs(imgEx - imgx)) / 2;
-      var ysizeSum = (abs(ely - efy) + abs(imgEy - imgy)) / 2;
-      if (xCenDist < xsizeSum && yCenDist < ysizeSum) {
-        //選択範囲がウィンドウを越えた場合
-        if (mode == 0) {
-          if (elx >= imgEx) {
-            elx = imgEx;
           }
-
-          if (ely >= imgEy) {
-            ely = imgEy;
-          }
-
-          if (efx <= imgx) {
-            efx = imgx;
-          }
-          if (efy <= imgy) {
-            efy = imgy;
-          }
-
-          //逆位置からドラックした場合
-          if (efx >= elx) {
-            var a = elx;
-            elx = efx;
-            efx = a;
-          }
-          if (efy >= ely) {
-            var a = ely;
-            ely = efy;
-            efy = a;
-          }
-
-        } else if (mode == 1 && !areaMovement) {
-          efx = x;
-          efy = y;
-          elx = ax;
-          ely = ay;
-        }
-        var gazouNo;
-
-
-        if (moveNow) {
-          PixelData.splice(rangeNo, 1);
-          rangedata.splice(rangeNo, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, rangedata[rangeNo].movemode));
-          gazouNo = rangeNo;
 
         } else {
-          rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
-          gazouNo = rangedata.length - 1;
-        }
-        moveNow = false;
-        emboss(gazouNo, img.width, img.height);
-
-
-        //右メニューに出す画像データを取得する
-        if (mode == 0) {
-          rangeImage[gazouNo] = createImage(elx - efx, ely - efy);
-          rangeImage[gazouNo] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
-
-          if (rangeImage[gazouNo].width > 150) {
-            rangeImage[gazouNo].resize(150, 0);
-          }
-        } else if (mode == 1) {
-          rangeImage[gazouNo] = createImage(elx, ely);
-          rangeImage[gazouNo] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
-
-          if (rangeImage[gazouNo].width > 150) {
-            rangeImage[gazouNo].resize(150, 0);
-          }
+          elx = mouseX;
+          ely = mouseY;
         }
 
-        imageGeneration(img.width, img.height);
+        //画像内で領域選択がされているか判定
+        var exCenter = (elx + efx) / 2;
+        var eyCenter = (ely + efy) / 2;
+        var imxCenter = (imgx + imgEx) / 2;
+        var imyCenter = (imgy + imgEy) / 2;
+        var xCenDist = abs(exCenter - imxCenter);
+        var yCenDist = abs(eyCenter - imyCenter);
+        var xsizeSum = (abs(elx - efx) + abs(imgEx - imgx)) / 2;
+        var ysizeSum = (abs(ely - efy) + abs(imgEy - imgy)) / 2;
+
+        if (xCenDist < xsizeSum && yCenDist < ysizeSum) {
+          //選択範囲がウィンドウを越えた場合
+          if (mode == 0) {
+            if (elx >= imgEx) {
+              elx = imgEx;
+            }
+
+            if (ely >= imgEy) {
+              ely = imgEy;
+            }
+
+            if (efx <= imgx) {
+              efx = imgx;
+            }
+            if (efy <= imgy) {
+              efy = imgy;
+            }
+
+            //逆位置からドラックした場合
+            if (efx >= elx) {
+              var a = elx;
+              elx = efx;
+              efx = a;
+            }
+            if (efy >= ely) {
+              var a = ely;
+              ely = efy;
+              efy = a;
+            }
+
+          } else if (mode == 1 && !areaMovement) {
+            efx = x;
+            efy = y;
+            elx = ax;
+            ely = ay;
+          }
+          var gazouNo;
+
+
+          if (moveNow) {
+            PixelData.splice(rangeNo, 1);
+            rangedata.splice(rangeNo, 1, new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, rangedata[rangeNo].movemode));
+            gazouNo = rangeNo;
+
+          } else {
+            rangedata.push(new RangeData(efx, efy, elx, ely, mouseX, mouseY, speed, mode, 0, Movemode));
+            gazouNo = rangedata.length - 1;
+          }
+
+          moveNow = false;
+          emboss(gazouNo, img.width, img.height);
+
+
+          //右メニューに出す画像データを取得する
+          if ((mode == 0 && !areaMovement) || (rangedata[rangeNo].mode == 0 && areaMovement)) {
+            rangeImage[gazouNo] = createImage(elx - efx, ely - efy);
+            rangeImage[gazouNo] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
+
+            if (rangeImage[gazouNo].width > 150) {
+              rangeImage[gazouNo].resize(150, 0);
+            }
+          } else if ((mode == 1 && !areaMovement) || (rangedata[rangeNo].mode == 1 && areaMovement)) {
+            rangeImage[gazouNo] = createImage(elx, ely);
+            rangeImage[gazouNo] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
+
+            if (rangeImage[gazouNo].width > 150) {
+              rangeImage[gazouNo].resize(150, 0);
+            }
+          }
+
+          imageGeneration(img.width, img.height);
+        } else {
+          //領域移動で編集画面外に置かれたとき元の位置に戻す
+
+          if (rangedata[rangeNo].mode == 0) {
+            moveRectx = rangedata[rangeNo].efX;
+            moveRecty = rangedata[rangeNo].efY;
+            moveRectEx = rangedata[rangeNo].elX - rangedata[rangeNo].efX;
+            moveRectEy = rangedata[rangeNo].elY - rangedata[rangeNo].efY;
+          } else if (rangedata[rangeNo].mode == 1) {
+            moveRectx = rangedata[rangeNo].efX - rangedata[rangeNo].elX / 2;
+            moveRecty = rangedata[rangeNo].efY - rangedata[rangeNo].elY / 2
+            moveRectEx = rangedata[rangeNo].elX;
+            moveRectEy = rangedata[rangeNo].elY;
+          }
+
+        }
       }
+
+      x = -10;
+      y = -10;
+      ax = -10;
+      ay = -10;
+      movepoint = -1;
     }
-
-    x = -10;
-    y = -10;
-    ax = -10;
-    ay = -10;
-    movepoint = -1;
   }
-
 }
 
 
@@ -1384,6 +1424,7 @@ function keyPressed() {
 }
 
 function imageGeneration(wi, he) {
+  Freeze = true;
   if (hozon) {
     if (ExportStep == rangedata.length + 2) {
       syorityu = true;
