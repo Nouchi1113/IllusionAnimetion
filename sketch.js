@@ -1365,23 +1365,41 @@ function mouseReleased() {
           moveNow = false;
           emboss(gazouNo, img.width, img.height);
 
-
           //右メニューに出す画像データを取得する
-          if ((mode == 0 && !areaMovement) || (rangedata[rangeNo].mode == 0 && areaMovement)) {
+          if (mode == 0 && !areaMovement) {
             rangeImage[gazouNo] = createImage(elx - efx, ely - efy);
             rangeImage[gazouNo] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
 
             if (rangeImage[gazouNo].width > 150) {
               rangeImage[gazouNo].resize(150, 0);
             }
-          } else if ((mode == 1 && !areaMovement) || (rangedata[rangeNo].mode == 1 && areaMovement)) {
+
+          } else if (mode == 1 && !areaMovement) {
             rangeImage[gazouNo] = createImage(elx, ely);
             rangeImage[gazouNo] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
 
             if (rangeImage[gazouNo].width > 150) {
               rangeImage[gazouNo].resize(150, 0);
             }
+
+
+          } else if (areaMovement) {
+            if (rangedata[rangeNo].mode == 0) {
+              rangeImage[gazouNo] = createImage(elx - efx, ely - efy);
+              rangeImage[gazouNo] = img.get(efx - imgx, efy - imgy, elx - efx, ely - efy);
+            } else if (rangedata[rangeNo].mode == 1) {
+              rangeImage[gazouNo] = createImage(elx, ely);
+              rangeImage[gazouNo] = img.get(efx - elx / 2 - imgx, efy - ely / 2 - imgy, elx, ely);
+            }
+            if (rangeImage[gazouNo].width > 150) {
+              rangeImage[gazouNo].resize(150, 0);
+            }
+
           }
+
+
+
+
 
           imageGeneration(img.width, img.height);
         } else {
