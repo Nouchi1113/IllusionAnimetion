@@ -137,6 +137,10 @@ var displayDist = 400;
 
 var Freeze = false;
 
+//高画質出力かどうか
+var hiq = false;
+
+var imgX, imgY;
 function preload() {
   //変数を使って画像をロード
   img = loadImage("bike.jpg");
@@ -159,10 +163,11 @@ function setup() {
 
   Sakujo.resize(70, 70);
 
+
   originalWidth = img.width;
   originalheight = img.height;
 
-  imageLoaded();
+  imageEdit();
 
   savepixel = [];//Moveangle,一つ目の画像の角度，２つ目
 
@@ -172,17 +177,17 @@ function setup() {
 }
 
 function imageLoaded() { //
-  originalWidth = img.width;
-  originalheight = img.height;
+  originalWidth = imgOriginal.width;
+  originalheight = imgOriginal.height;
 
-
+}
+function imageEdit() {
   img.resize(400, 0);
   if (img.width >= 400) {
     img.resize(400, 0);
   } else if (img.height >= 300) {
     img.resize(0, 300);
   }
-
   img0 = createImage(img.width, img.height);
   img1 = createImage(img.width, img.height);
   img2 = createImage(img.width, img.height);
@@ -209,16 +214,15 @@ function imageLoaded() { //
 
   rangedata.length = 0;
   PixelData.length = 0;
+
+
 }
 
 function handleFile(file) {
   print(file);
   if (file.type === 'image') {
-    img = loadImage(file.data, imageLoaded);
-
-    originalWidth = img.width;
-    soriginalheight = img.height;
-
+    imgOriginal = loadImage(file.data, imageLoaded);
+    img = loadImage(file.data, imageEdit)
   } else {
     img = null;
   }
@@ -230,7 +234,6 @@ function handleFile(file) {
 function draw() {
   //挙動停止を止める
   Freeze = false;
-
   //var p = 0;
   //console.log(p);
   //console.log(p + 1);
@@ -625,7 +628,7 @@ function emboss(num, wi, he) {
   Embpixel2 = [];
   Menu = [];
 
-  if (wi == img.width && he == img.height) {
+  if (!hiq) {
 
   } else {
     imgx = 0;
@@ -683,7 +686,7 @@ function emboss(num, wi, he) {
 
     for (j = 0; j < he - diff; j++) {
       for (i = 0; i < wi - diff; i++) {
-        if (wi == img.width && he == img.height) {
+        if (!hiq) {
           gc = img.get(i + gx, j + gy);
           nc = img.get(i + nx, j + ny);
         } else {
@@ -710,7 +713,7 @@ function emboss(num, wi, he) {
       for (i = 0; i < wi - diff; i++) {
         MangCalc(imgx + i, imgy + j);
 
-        if (wi == img.width && he == img.height) {
+        if (!hiq) {
           gc = img.get(i + gx, j + gy);
           nc = img.get(i + nx, j + ny);
         } else {
@@ -736,7 +739,7 @@ function emboss(num, wi, he) {
     for (j = 0; j < he - diff; j++) {
       for (i = 0; i < wi - diff; i++) {
         MangCalc(imgx + i, imgy + j);
-        if (wi == img.width && he == img.height) {
+        if (!hiq) {
           gc = img.get(i + gx, j + gy);
           nc = img.get(i + nx, j + ny);
         } else {
@@ -763,7 +766,7 @@ function emboss(num, wi, he) {
     MangCalc(centerX, centerY);
     for (j = 0; j < he - diff; j++) {
       for (i = 0; i < wi - diff; i++) {
-        if (wi == img.width && he == img.height) {
+        if (!hiq) {
           gc = img.get(i + gx, j + gy);
           nc = img.get(i + nx, j + ny);
         } else {
@@ -790,7 +793,7 @@ function emboss(num, wi, he) {
     for (j = 0; j < he - diff; j++) {
       for (i = 0; i < wi - diff; i++) {
 
-        if (wi == img.width && he == img.height) {
+        if (!hiq) {
           gc = img.get(i, j);
           nc = img.get(i, j);
         } else {
@@ -1130,6 +1133,7 @@ function mousePressed() {
         imageGeneration(img.width, img.height);
       }
 
+
       //動画出力
       //GIF　rect(1013, 15, 60, 40, 5);  
       if (rangedata.length > 0) {
@@ -1139,6 +1143,7 @@ function mousePressed() {
                   hozonHeight = img.height;
                   Format = 'gif'
                   Export(img.width, img.height, 0);
+                  hiq = false;
                 }
         
                 //WEBM rect(1090, 15, 80, 40, 5);
@@ -1147,6 +1152,7 @@ function mousePressed() {
                   hozonHeight = img.height;
                   Format = 'webm';
                   Export(img.width, img.height, 0);
+                  hiq = false;
         
                 }
         
@@ -1155,6 +1161,7 @@ function mousePressed() {
                   hozonHeight = originalheight;
                   Format = 'gif';
                   Export(originalWidth, originalheight, 0);
+                  hiq = true;
                 }
         */
         //WEBM rect(1090, 15, 80, 40, 5);
@@ -1163,6 +1170,7 @@ function mousePressed() {
           hozonHeight = originalheight;
           Format = 'webm';
           Export(originalWidth, originalheight, 0);
+          hiq = true;
         }
       }
 
@@ -1177,7 +1185,7 @@ function mousePressed() {
 function mouseDragged() {
   if (!Freeze) {
     if (mouseButton == RIGHT && !areaMovement) {
-      if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930) {
+      if (mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930 && x != -10 && y != -10) {
 
         if (mode == 0) {
           ax = mouseX - x;
@@ -1264,7 +1272,7 @@ function mouseReleased() {
   var small = false;
 
   if (!Freeze) {
-    if (mouseButton == RIGHT && !areaMovement || (mouseButton == LEFT && moveNow)) {
+    if (mouseButton == RIGHT && !areaMovement && x != -10 && y != -10 || (mouseButton == LEFT && moveNow)) {
       if ((mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930)) {
         efx = Efx;
         efy = Efy;
@@ -1461,7 +1469,7 @@ function imageGeneration(wi, he) {
       for (j = 0; j < he - diff; j++) {
         for (i = 0; i < wi - diff; i++) {
           let c;
-          if (wi == img.width && he == img.height) {
+          if (!hiq) {
             c = img.get(i, j);
           } else {
             c = imgOriginal.get(i, j);
@@ -1472,13 +1480,14 @@ function imageGeneration(wi, he) {
           img3.set(i, j, c);
         }
       }
+
     } else if (ExportStep >= rangedata.length + 3 && ExportStep < rangedata.length + 3 + rangedata.length) {
       a = ExportStep - (rangedata.length + 3)
       for (j = 0; j < he - diff; j++) {
         for (i = 0; i < wi - diff; i++) {
           let c;
           if (PixelData[a][0][i + (wi - diff) * j] == 1) {
-            if (wi == img.width && he == img.height) {
+            if (!hiq) {
               c = img.get(i, j);
             } else {
               c = imgOriginal.get(i, j);
@@ -1513,7 +1522,7 @@ function imageGeneration(wi, he) {
     for (j = 0; j < he - diff; j++) {
       for (i = 0; i < wi - diff; i++) {
         let c;
-        if (wi == img.width && he == img.height) {
+        if (!hiq) {
           c = img.get(i, j);
         } else {
           c = imgOriginal.get(i, j);
@@ -1532,7 +1541,7 @@ function imageGeneration(wi, he) {
         for (i = 0; i < wi - diff; i++) {
           let c;
           if (PixelData[a][0][i + (wi - diff) * j] == 1) {
-            if (wi == img.width && he == img.height) {
+            if (!hiq) {
               c = img.get(i, j);
             } else {
               c = imgOriginal.get(i, j);
@@ -1557,7 +1566,11 @@ function imageGeneration(wi, he) {
 
 
 function Export(wid, hei, exportStep) {
+
   if (exportStep == 0) {
+
+    imgX = imgx;
+    imgY = imgy;
     diff = Math.round(tan(radians(0.17)) * Number(document.getElementById("Dist").value) / (25.4 / Number(document.getElementById("DPI").value)));
     mp4 = true;
     allsteps = rangedata.length + 3 + rangedata.length + 1;
@@ -1638,12 +1651,15 @@ function Export(wid, hei, exportStep) {
 
   } else if (2 <= exportStep && exportStep < rangedata.length + 2) {
     //rangedataを元の画像サイズ版にする
-    if (wid != img.width) {
+
+    if (hiq) {
+
       i = ExportStep - 2;
-      rangedata[i].efX = map(rangedata[i].efX, imgx, imgEx, 0, wid);
-      rangedata[i].efY = map(rangedata[i].efY, imgy, imgEy, 0, hei);
-      rangedata[i].elX = map(rangedata[i].elX, imgx, imgEx, 0, wid);
-      rangedata[i].elY = map(rangedata[i].elY, imgy, imgEy, 0, hei);
+      console.log(imgX, imgY, wid);
+      rangedata[i].efX = map(rangedata[i].efX, imgX, imgEx, 0, wid);
+      rangedata[i].efY = map(rangedata[i].efY, imgY, imgEy, 0, hei);
+      rangedata[i].elX = map(rangedata[i].elX, imgX, imgEx, 0, wid);
+      rangedata[i].elY = map(rangedata[i].elY, imgY, imgEy, 0, hei);
       emboss(i, wid, hei);
     }
 
