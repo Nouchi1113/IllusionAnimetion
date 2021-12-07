@@ -1133,33 +1133,30 @@ function mousePressed() {
       //動画出力
       //GIF　rect(1013, 15, 60, 40, 5);  
       if (rangedata.length > 0) {
-
-        if (mouseX > 763 && mouseX < 823 && mouseY > 0 && mouseY < 60 && po == 0) {
-          hozonWidth = img.width;
-          hozonHeight = img.height;
-          Format = 'gif'
-          Export(img.width, img.height, 0);
-
-
-
-        }
-
-        //WEBM rect(1090, 15, 80, 40, 5);
-        if (mouseX > 840 && mouseX < 920 && mouseY > 0 && mouseY < 60 && po == 0) {
-          hozonWidth = img.width;
-          hozonHeight = img.height;
-          Format = 'webm';
-          Export(img.width, img.height, 0);
-
-        }
-
-        if (mouseX > 1013 && mouseX < 1073 && mouseY > 0 && mouseY < 60 && po == 0) {
-          hozonWidth = originalWidth;
-          hozonHeight = originalheight;
-          Format = 'gif';
-          Export(originalWidth, originalheight, 0);
-        }
-
+        /*
+                if (mouseX > 763 && mouseX < 823 && mouseY > 0 && mouseY < 60 && po == 0) {
+                  hozonWidth = img.width;
+                  hozonHeight = img.height;
+                  Format = 'gif'
+                  Export(img.width, img.height, 0);
+                }
+        
+                //WEBM rect(1090, 15, 80, 40, 5);
+                if (mouseX > 840 && mouseX < 920 && mouseY > 0 && mouseY < 60 && po == 0) {
+                  hozonWidth = img.width;
+                  hozonHeight = img.height;
+                  Format = 'webm';
+                  Export(img.width, img.height, 0);
+        
+                }
+        
+                if (mouseX > 1013 && mouseX < 1073 && mouseY > 0 && mouseY < 60 && po == 0) {
+                  hozonWidth = originalWidth;
+                  hozonHeight = originalheight;
+                  Format = 'gif';
+                  Export(originalWidth, originalheight, 0);
+                }
+        */
         //WEBM rect(1090, 15, 80, 40, 5);
         if (mouseX > 1090 && mouseX < 1170 && mouseY > 0 && mouseY < 60 && po == 0) {
           hozonWidth = originalWidth;
