@@ -1261,6 +1261,8 @@ function mouseDragged() {
 
 // ドラッグ終了時に四角が消えて指定した部分が動く
 function mouseReleased() {
+  var small = false;
+
   if (!Freeze) {
     if (mouseButton == RIGHT && !areaMovement || (mouseButton == LEFT && moveNow)) {
       if ((mouseX >= 200 && mouseX <= 1190 && mouseY >= 60 && mouseY <= 930)) {
@@ -1299,6 +1301,13 @@ function mouseReleased() {
           elx = mouseX;
           ely = mouseY;
         }
+        console.log(efx, efy, elx, ely);
+        //四角が小さかった場合の対応
+        if (abs(efx - elx) < 5 || abs(efy - ely) < 5) {
+          small = true;
+
+
+        }
 
         //画像内で領域選択がされているか判定
         var exCenter = (elx + efx) / 2;
@@ -1310,7 +1319,7 @@ function mouseReleased() {
         var xsizeSum = (abs(elx - efx) + abs(imgEx - imgx)) / 2;
         var ysizeSum = (abs(ely - efy) + abs(imgEy - imgy)) / 2;
 
-        if (xCenDist < xsizeSum && yCenDist < ysizeSum) {
+        if (xCenDist < xsizeSum && yCenDist < ysizeSum && !small) {
           //選択範囲がウィンドウを越えた場合
           if (mode == 0) {
             if (elx >= imgEx) {
@@ -1401,17 +1410,18 @@ function mouseReleased() {
           imageGeneration(img.width, img.height);
         } else {
           //領域移動で編集画面外に置かれたとき元の位置に戻す
-
-          if (rangedata[rangeNo].mode == 0) {
-            moveRectx = rangedata[rangeNo].efX;
-            moveRecty = rangedata[rangeNo].efY;
-            moveRectEx = rangedata[rangeNo].elX - rangedata[rangeNo].efX;
-            moveRectEy = rangedata[rangeNo].elY - rangedata[rangeNo].efY;
-          } else if (rangedata[rangeNo].mode == 1) {
-            moveRectx = rangedata[rangeNo].efX - rangedata[rangeNo].elX / 2;
-            moveRecty = rangedata[rangeNo].efY - rangedata[rangeNo].elY / 2
-            moveRectEx = rangedata[rangeNo].elX;
-            moveRectEy = rangedata[rangeNo].elY;
+          if (areaMovement) {
+            if (rangedata[rangeNo].mode == 0) {
+              moveRectx = rangedata[rangeNo].efX;
+              moveRecty = rangedata[rangeNo].efY;
+              moveRectEx = rangedata[rangeNo].elX - rangedata[rangeNo].efX;
+              moveRectEy = rangedata[rangeNo].elY - rangedata[rangeNo].efY;
+            } else if (rangedata[rangeNo].mode == 1) {
+              moveRectx = rangedata[rangeNo].efX - rangedata[rangeNo].elX / 2;
+              moveRecty = rangedata[rangeNo].efY - rangedata[rangeNo].elY / 2
+              moveRectEx = rangedata[rangeNo].elX;
+              moveRectEy = rangedata[rangeNo].elY;
+            }
           }
 
         }
