@@ -150,6 +150,8 @@ function preload() {
   Sakujo = loadImage("Sakujo.png");
 }
 
+var savecount = 0;
+
 function setup() {
 
   frameRate(framerate);
@@ -289,8 +291,7 @@ function draw() {
 
       if (imgcount <= saveFrame) {　//4秒後Captureを停止する
         capturer.capture(document.getElementById('defaultCanvas0'));
-      }
-      else if (mp4 && imgcount == saveFrame + 1) {
+      } else if (mp4 && imgcount == saveFrame + 1) {
         capturer.save();
         capturer.stop();
       }
@@ -1639,6 +1640,27 @@ function Export(wid, hei, exportStep) {
           p.fill(255, 0, 0);
           p.text("OutputMovieがダウンロードされたらこのブラウザを閉じて実験後アンケートを書いてください", 200, 450);
 
+
+          if (savecount == 0) {
+            save(img0, "画像1.png");
+          } else if (savecount == 1) {
+            save(img1, "画像2.png");
+          } else if (savecount == 2) {
+            save(img2, "画像3.png");
+          } else if (savecount == 3) {
+            save(img3, "画像4.png");
+          } else if (savecount == 200) {
+            imgcount = 0;
+          }
+
+          if (savecount <= 200) {
+            savecount++;
+          }
+
+
+
+
+
         }
         p.textSize(50);
         p.text("(" + ExportStep + "/" + allsteps + ")", 690, 300);
@@ -1685,21 +1707,11 @@ function Export(wid, hei, exportStep) {
     if (exportStep == allsteps - 1) {
       //何故かダウンロードされない画像が出てくるのでimagegenerationの方と分けている
 
-      for (s = 0; s < 20; s++) {
-        if (s == 4) {
-          save(img0, "画像1.png");
-        }
-        if (s == 8) {
-          save(img1, "画像2.png");
-        }
-        if (s == 12) {
-          save(img2, "画像3.png");
-        }
-        if (s == 16) {
-          save(img3, "画像4.png");
-        }
-      }
-      imgcount = 0;
+
+
+
+
+
     }
 
   }
