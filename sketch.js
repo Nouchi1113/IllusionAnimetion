@@ -285,6 +285,8 @@ function draw() {
         capturer.start();
       }
 
+
+
       if (imgcount <= saveFrame) {　//4秒後Captureを停止する
         capturer.capture(document.getElementById('defaultCanvas0'));
       }
@@ -1508,6 +1510,9 @@ function imageGeneration(wi, he) {
       img3.updatePixels();
 
       syorityu = false;
+
+
+
     }
 
   } else {
@@ -1561,6 +1566,9 @@ function imageGeneration(wi, he) {
     img3.updatePixels();
 
     syorityu = false;
+
+
+
   }
 }
 
@@ -1627,7 +1635,9 @@ function Export(wid, hei, exportStep) {
           p.text("映像出力中", 430, 300);
           p.textSize(30);
           p.text("（高画質の出力の場合，数分かかる可能性があります）", 250, 350);
-
+          p.textSize(20);
+          p.fill(255, 0, 0);
+          p.text("OutputMovieがダウンロードされたらこのブラウザを閉じて実験後アンケートを書いてください", 200, 450);
 
         }
         p.textSize(50);
@@ -1655,22 +1665,40 @@ function Export(wid, hei, exportStep) {
     if (hiq) {
 
       i = ExportStep - 2;
-      console.log(imgX, imgY, wid);
+
       rangedata[i].efX = map(rangedata[i].efX, imgX, imgEx, 0, wid);
       rangedata[i].efY = map(rangedata[i].efY, imgY, imgEy, 0, hei);
-      rangedata[i].elX = map(rangedata[i].elX, imgX, imgEx, 0, wid);
-      rangedata[i].elY = map(rangedata[i].elY, imgY, imgEy, 0, hei);
+      if (rangedata[i].mode == 0) {
+        rangedata[i].elX = map(rangedata[i].elX, imgX, imgEx, 0, wid);
+        rangedata[i].elY = map(rangedata[i].elY, imgY, imgEy, 0, hei);
+      } else if (rangedata[i].mode == 1) {
+        rangedata[i].elX = map(rangedata[i].elX, 0, imgEx - imgX, 0, wid);
+        rangedata[i].elY = map(rangedata[i].elY, 0, imgEy - imgY, 0, hei);
+      }
+
       emboss(i, wid, hei);
     }
 
   } else if (exportStep >= rangedata.length + 2 && exportStep <= rangedata.length + 3 + rangedata.length) {
     imageGeneration(wid, hei);
-
+    console.log(exportStep);
     if (exportStep == allsteps - 1) {
-      save(img0, "画像1.png");
-      save(img1, "画像2.png");
-      save(img2, "画像3.png");
-      save(img3, "画像4.png");
+      //何故かダウンロードされない画像が出てくるのでimagegenerationの方と分けている
+
+      for (s = 0; s < 20; s++) {
+        if (s == 4) {
+          save(img0, "画像1.png");
+        }
+        if (s == 8) {
+          save(img1, "画像2.png");
+        }
+        if (s == 12) {
+          save(img2, "画像3.png");
+        }
+        if (s == 16) {
+          save(img3, "画像4.png");
+        }
+      }
       imgcount = 0;
     }
 
