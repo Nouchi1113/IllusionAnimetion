@@ -1649,11 +1649,11 @@ function Export(wid, hei, exportStep) {
             save(img2, "画像3.png");
           } else if (savecount == 3) {
             save(img3, "画像4.png");
-          } else if (savecount == 200) {
+          } else if (savecount == 300) {
             imgcount = 0;
           }
 
-          if (savecount <= 200) {
+          if (savecount <= 300) {
             savecount++;
           }
 
