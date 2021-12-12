@@ -287,8 +287,6 @@ function draw() {
         capturer.start();
       }
 
-
-
       if (imgcount <= saveFrame) {　//4秒後Captureを停止する
         capturer.capture(document.getElementById('defaultCanvas0'));
       } else if (mp4 && imgcount == saveFrame + 1) {
@@ -1635,25 +1633,31 @@ function Export(wid, hei, exportStep) {
           p.textSize(50);
           p.text("映像出力中", 430, 300);
           p.textSize(30);
-          p.text("（高画質の出力の場合，数分かかる可能性があります）", 250, 350);
+          p.text("（OutOutputMovieのみ，数分遅れて出力される可能性があります）", 200, 350);
           p.textSize(20);
           p.fill(255, 0, 0);
           p.text("OutputMovieがダウンロードされたらこのブラウザを閉じて実験後アンケートを書いてください", 200, 450);
 
 
           if (savecount == 0) {
+            console.log(1);
             save(img0, "画像1.png");
-          } else if (savecount == 1) {
+          } else if (savecount == 10) {
+            console.log(2);
             save(img1, "画像2.png");
-          } else if (savecount == 2) {
+          } else if (savecount == 20) {
+            console.log(3);
             save(img2, "画像3.png");
-          } else if (savecount == 3) {
+          } else if (savecount == 30) {
+            console.log(4);
             save(img3, "画像4.png");
-          } else if (savecount == 300) {
+          } else if (savecount == 200) {
+            console.log(5);
             imgcount = 0;
+
           }
 
-          if (savecount <= 300) {
+          if (savecount <= 200) {
             savecount++;
           }
 
@@ -1703,7 +1707,7 @@ function Export(wid, hei, exportStep) {
 
   } else if (exportStep >= rangedata.length + 2 && exportStep <= rangedata.length + 3 + rangedata.length) {
     imageGeneration(wid, hei);
-    console.log(exportStep);
+    //console.log(exportStep);
     if (exportStep == allsteps - 1) {
       //何故かダウンロードされない画像が出てくるのでimagegenerationの方と分けている
 
