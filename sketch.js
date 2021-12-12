@@ -1641,16 +1641,16 @@ function Export(wid, hei, exportStep) {
 
           if (savecount == 0) {
             console.log(1);
-            save(img0, "画像1.png");
+            //  save(img0, "画像1.png");
           } else if (savecount == 10) {
             console.log(2);
-            save(img1, "画像2.png");
+            //  save(img1, "画像2.png");
           } else if (savecount == 20) {
             console.log(3);
-            save(img2, "画像3.png");
+            //  save(img2, "画像3.png");
           } else if (savecount == 30) {
             console.log(4);
-            save(img3, "画像4.png");
+            // save(img3, "画像4.png");
           } else if (savecount == 200) {
             console.log(5);
             imgcount = 0;
@@ -1694,12 +1694,18 @@ function Export(wid, hei, exportStep) {
 
       rangedata[i].efX = map(rangedata[i].efX, imgX, imgEx, 0, wid);
       rangedata[i].efY = map(rangedata[i].efY, imgY, imgEy, 0, hei);
+
+      rangedata[i].mousex = map(rangedata[i].mousex, imgX, imgEx, 0, wid);
+      rangedata[i].mousey = map(rangedata[i].mousey, imgY, imgEy, 0, hei);
       if (rangedata[i].mode == 0) {
         rangedata[i].elX = map(rangedata[i].elX, imgX, imgEx, 0, wid);
         rangedata[i].elY = map(rangedata[i].elY, imgY, imgEy, 0, hei);
+
+
       } else if (rangedata[i].mode == 1) {
         rangedata[i].elX = map(rangedata[i].elX, 0, imgEx - imgX, 0, wid);
         rangedata[i].elY = map(rangedata[i].elY, 0, imgEy - imgY, 0, hei);
+
       }
 
       emboss(i, wid, hei);
