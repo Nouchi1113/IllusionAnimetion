@@ -1678,10 +1678,10 @@ function Export(wid, hei, exportStep) {
     p5Canvas = createCanvas(wid - diff, hei - diff);
     p5Canvas.hide();
 
-    img0 = createImage(wid, hei);
-    img1 = createImage(wid, hei);
-    img2 = createImage(wid, hei);
-    img3 = createImage(wid, hei);
+    //img0 = createImage(wid, hei);
+    //img1 = createImage(wid, hei);
+    //img2 = createImage(wid, hei);
+    //img3 = createImage(wid, hei);
 
     ExportStep++;
 
