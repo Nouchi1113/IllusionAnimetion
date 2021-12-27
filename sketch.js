@@ -287,7 +287,7 @@ function draw() {
         capturer.start();
       }
 
-      if (imgcount <= saveFrame) {　//4秒後Captureを停止する
+      if (imgcount <= saveFrame) {//4秒後Captureを停止する
         capturer.capture(document.getElementById('defaultCanvas0'));
       } else if (mp4 && imgcount == saveFrame + 1) {
         capturer.save();
@@ -1678,10 +1678,10 @@ function Export(wid, hei, exportStep) {
     p5Canvas = createCanvas(wid - diff, hei - diff);
     p5Canvas.hide();
 
-    //img0 = createImage(wid, hei);
-    //img1 = createImage(wid, hei);
-    //img2 = createImage(wid, hei);
-    //img3 = createImage(wid, hei);
+    img0 = createImage(wid, hei);
+    img1 = createImage(wid, hei);
+    img2 = createImage(wid, hei);
+    img3 = createImage(wid, hei);
 
     ExportStep++;
 
@@ -1697,6 +1697,7 @@ function Export(wid, hei, exportStep) {
 
       rangedata[i].mousex = map(rangedata[i].mousex, imgX, imgEx, 0, wid);
       rangedata[i].mousey = map(rangedata[i].mousey, imgY, imgEy, 0, hei);
+
       if (rangedata[i].mode == 0) {
         rangedata[i].elX = map(rangedata[i].elX, imgX, imgEx, 0, wid);
         rangedata[i].elY = map(rangedata[i].elY, imgY, imgEy, 0, hei);
